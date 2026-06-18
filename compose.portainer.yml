@@ -28,10 +28,13 @@ services:
     restart: unless-stopped
     ports:
       - "8014:8000"
+    volumes:
+      - mrbs_branding_data:/app/data/branding
     environment:
       - PROJECT_NAME=Fusion Hotel Group MRBS
       - ENVIRONMENT=production
       - TIMEZONE=Asia/Ho_Chi_Minh
+      - BRANDING_UPLOAD_DIR=/app/data/branding
       - SECRET_KEY=${SECRET_KEY}
       - FIRST_SUPERUSER=admin@example.com
       - FIRST_SUPERUSER_PASSWORD=${FIRST_SUPERUSER_PASSWORD}
@@ -113,6 +116,8 @@ services:
 
 volumes:
   mrbs_postgres_data:
+    driver: local
+  mrbs_branding_data:
     driver: local
 
 networks:

@@ -225,8 +225,6 @@ def report_bookings(
     skip: int = 0,
     limit: int = 500,
 ) -> Any:
-    del current_user
-
     statement = select(Booking).where(Booking.status != BookingStatus.CANCELLED)
     count_statement = (
         select(func.count())

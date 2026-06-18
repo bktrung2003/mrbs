@@ -36,6 +36,7 @@ function BrandingPage() {
   const [companyName, setCompanyName] = useState("")
   const [systemName, setSystemName] = useState("")
   const [headerColor, setHeaderColor] = useState("#D97706")
+  const [logoVersion, setLogoVersion] = useState(0)
 
   useEffect(() => {
     setCompanyName(branding.company_name)
@@ -62,6 +63,7 @@ function BrandingPage() {
       uploadBrandingLogo(variant, file),
     onSuccess: () => {
       showSuccessToast("Logo uploaded")
+      setLogoVersion((v) => v + 1)
       queryClient.invalidateQueries({ queryKey: ["branding"] })
     },
     onError: () => showErrorToast("Could not upload logo"),
@@ -137,6 +139,7 @@ function BrandingPage() {
                   title="Color logo"
                   subtitle="Transparent PNG — light backgrounds"
                   previewUrl={branding.logo_color_url}
+                  previewVersion={logoVersion}
                   previewClassName="bg-slate-100"
                   onUpload={(file) => uploadMut.mutate({ variant: "color", file })}
                   uploading={uploadMut.isPending}
@@ -145,6 +148,7 @@ function BrandingPage() {
                   title="White logo"
                   subtitle="For dark / orange header"
                   previewUrl={branding.logo_white_url}
+                  previewVersion={logoVersion}
                   previewClassName="bg-[#D97706]"
                   onUpload={(file) => uploadMut.mutate({ variant: "white", file })}
                   uploading={uploadMut.isPending}
@@ -194,6 +198,7 @@ function LogoUploadCard({
   title,
   subtitle,
   previewUrl,
+  previewVersion,
   previewClassName,
   onUpload,
   uploading,
@@ -201,6 +206,7 @@ function LogoUploadCard({
   title: string
   subtitle: string
   previewUrl: string
+  previewVersion: number
   previewClassName: string
   onUpload: (file: File) => void
   uploading: boolean
@@ -212,7 +218,11 @@ function LogoUploadCard({
       <div
         className={`mb-3 flex h-20 items-center justify-center rounded-lg p-2 ${previewClassName}`}
       >
-        <img src={previewUrl} alt="" className="max-h-full max-w-full object-contain" />
+        <img
+          src={`${previewUrl}?v=${previewVersion}`}
+          alt=""
+          className="max-h-full max-w-full object-contain"
+        />
       </div>
       <label className="block">
         <span className="sr-only">Upload {title}</span>

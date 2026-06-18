@@ -1,3 +1,4 @@
+import os
 from pathlib import Path
 from typing import Any
 from uuid import uuid4
@@ -10,15 +11,23 @@ from app.models import BrandingSettings, BrandingSettingsPublic, BrandingSetting
 
 router = APIRouter(prefix="/branding", tags=["branding"])
 
-BRANDING_UPLOAD_DIR = (
-    Path(__file__).resolve().parents[4]
-    / "frontend"
-    / "public"
-    / "assets"
-    / "branding"
-)
-
 ALLOWED_TYPES = {"image/png", "image/jpeg", "image/webp", "image/svg+xml"}
+
+
+def get_branding_upload_dir() -> Path:
+    configured = os.environ.get("BRANDING_UPLOAD_DIR")
+    if configured:
+        return Path(configured)
+    return (
+        Path(__file__).resolve().parents[4]
+        / "frontend"
+        / "public"
+        / "assets"
+        / "branding"
+    )
+
+
+BRANDING_UPLOAD_DIR = get_branding_upload_dir()
 
 
 def _get_or_create(session: SessionDep) -> BrandingSettings:

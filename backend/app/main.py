@@ -1,9 +1,11 @@
 import sentry_sdk
 from fastapi import FastAPI
 from fastapi.routing import APIRoute
+from fastapi.staticfiles import StaticFiles
 from starlette.middleware.cors import CORSMiddleware
 
 from app.api.main import api_router
+from app.api.routes.branding import BRANDING_UPLOAD_DIR
 from app.core.config import settings
 
 
@@ -31,3 +33,10 @@ if settings.all_cors_origins:
     )
 
 app.include_router(api_router, prefix=settings.API_V1_STR)
+
+BRANDING_UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
+app.mount(
+    "/assets/branding",
+    StaticFiles(directory=str(BRANDING_UPLOAD_DIR)),
+    name="branding-uploads",
+)

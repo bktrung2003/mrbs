@@ -30,6 +30,7 @@ export function usePwaInstall() {
 
   useEffect(() => {
     const onBeforeInstall = (e: Event) => {
+      if (localStorage.getItem(DISMISS_KEY) === "1" || isStandalone()) return
       e.preventDefault()
       setDeferredPrompt(e as BeforeInstallPromptEvent)
     }
