@@ -9,6 +9,7 @@ import {
   formValuesToPayload,
 } from "@/components/mrbs/BookingDialog"
 import { MrbsHeader } from "@/components/mrbs/MrbsHeader"
+import { mrbsPageShellClass } from "@/components/mrbs/mrbs-page-shell"
 import { MyBookingsList } from "@/components/mrbs/MyBookingsList"
 import { fusionBtnPrimary } from "@/components/mrbs/fusion-brand"
 import { scheduleTheme as theme } from "@/components/mrbs/schedule-theme"
@@ -197,7 +198,7 @@ function MyBookingsPage() {
         : "Approved and upcoming meetings"
 
   return (
-    <div className={`flex h-screen flex-col overflow-hidden ${theme.pageBg}`}>
+    <div className={`${mrbsPageShellClass} ${theme.pageBg}`}>
       <MrbsHeader />
 
       <div className="flex min-h-0 flex-1 flex-col gap-3 px-3 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] lg:px-4 lg:py-4">

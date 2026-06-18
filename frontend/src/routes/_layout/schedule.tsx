@@ -15,6 +15,7 @@ import { MiniCalendar } from "@/components/mrbs/MiniCalendar"
 import { MobileDayRoomGrid } from "@/components/mrbs/MobileDayRoomGrid"
 import { MonthScheduleGrid } from "@/components/mrbs/MonthScheduleGrid"
 import { MrbsHeader } from "@/components/mrbs/MrbsHeader"
+import { mrbsPageShellClass } from "@/components/mrbs/mrbs-page-shell"
 import { WeekScheduleGrid } from "@/components/mrbs/WeekScheduleGrid"
 import { scheduleTheme as theme } from "@/components/mrbs/schedule-theme"
 import { fusionBtnPrimary } from "@/components/mrbs/fusion-brand"
@@ -345,7 +346,7 @@ function SchedulePage() {
   }
 
   return (
-    <div className={`flex h-screen flex-col overflow-hidden ${theme.pageBg}`}>
+    <div className={`${mrbsPageShellClass} ${theme.pageBg}`}>
       <MrbsHeader />
 
       <div className="flex min-h-0 w-full flex-1 flex-col gap-3 px-3 py-3 pb-[max(1rem,env(safe-area-inset-bottom))] lg:px-4 lg:py-4">

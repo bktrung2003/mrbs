@@ -1,5 +1,6 @@
 import { createFileRoute, Outlet, redirect } from "@tanstack/react-router"
 
+import { MobileBottomNav } from "@/components/mrbs/MobileBottomNav"
 import { PwaInstallBanner } from "@/components/mrbs/PwaInstallBanner"
 import { isLoggedIn } from "@/hooks/useAuth"
 
@@ -18,6 +19,7 @@ function Layout() {
   return (
     <>
       <Outlet />
+      <MobileBottomNav />
       <PwaInstallBanner />
     </>
   )

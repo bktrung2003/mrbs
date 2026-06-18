@@ -10,7 +10,7 @@ export function PwaInstallBanner() {
   if (installed || (!canInstall && !showIosHint)) return null
 
   return (
-    <div className="fixed inset-x-0 bottom-0 z-50 border-t border-[#FBC081]/60 bg-[#FEF3E8] px-4 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] shadow-lg md:bottom-4 md:left-auto md:right-4 md:max-w-sm md:rounded-xl md:border">
+    <div className="fixed inset-x-0 bottom-0 z-50 border-t border-[#FBC081]/60 bg-[#FEF3E8] px-4 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] shadow-lg max-md:bottom-[calc(4.5rem+env(safe-area-inset-bottom,0px))] md:bottom-4 md:left-auto md:right-4 md:max-w-sm md:rounded-xl md:border">
       <div className="flex items-start gap-3">
         <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-white shadow-sm">
           {showIosHint ? (
