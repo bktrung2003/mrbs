@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router"
+import { createFileRoute, Link } from "@tanstack/react-router"
 import { z } from "zod"
 
 import { MrbsHeader } from "@/components/mrbs/MrbsHeader"
@@ -8,6 +8,7 @@ import ChangePassword from "@/components/UserSettings/ChangePassword"
 import DeleteAccount from "@/components/UserSettings/DeleteAccount"
 import UserInformation from "@/components/UserSettings/UserInformation"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { APP_VERSION } from "@/content/whats-new"
 import useAuth from "@/hooks/useAuth"
 
 const settingsSearchSchema = z.object({
@@ -71,6 +72,16 @@ function UserSettings() {
               </TabsContent>
             ))}
           </Tabs>
+
+          <div className="flex flex-wrap items-center justify-between gap-2 border-t border-stone-100 pt-4 text-xs text-slate-500">
+            <span>MRBS v{APP_VERSION}</span>
+            <Link
+              to="/whats-new"
+              className="font-medium text-[#E8872E] hover:underline"
+            >
+              Có gì mới →
+            </Link>
+          </div>
         </div>
       </main>
     </div>

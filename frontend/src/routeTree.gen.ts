@@ -16,6 +16,7 @@ import { Route as LoginRouteImport } from './routes/login'
 import { Route as LayoutRouteImport } from './routes/_layout'
 import { Route as LayoutIndexRouteImport } from './routes/_layout/index'
 import { Route as EventsTokenRouteImport } from './routes/events/$token'
+import { Route as LayoutWhatsNewRouteImport } from './routes/_layout/whats-new'
 import { Route as LayoutUsersRouteImport } from './routes/_layout/users'
 import { Route as LayoutSettingsRouteImport } from './routes/_layout/settings'
 import { Route as LayoutScheduleRouteImport } from './routes/_layout/schedule'
@@ -64,6 +65,11 @@ const EventsTokenRoute = EventsTokenRouteImport.update({
   id: '/events/$token',
   path: '/events/$token',
   getParentRoute: () => rootRouteImport,
+} as any)
+const LayoutWhatsNewRoute = LayoutWhatsNewRouteImport.update({
+  id: '/whats-new',
+  path: '/whats-new',
+  getParentRoute: () => LayoutRoute,
 } as any)
 const LayoutUsersRoute = LayoutUsersRouteImport.update({
   id: '/users',
@@ -154,6 +160,7 @@ export interface FileRoutesByFullPath {
   '/schedule': typeof LayoutScheduleRoute
   '/settings': typeof LayoutSettingsRoute
   '/users': typeof LayoutUsersRoute
+  '/whats-new': typeof LayoutWhatsNewRoute
   '/events/$token': typeof EventsTokenRouteWithChildren
   '/events/$token/survey': typeof EventsTokenSurveyRoute
   '/events/registration/$confirmationToken': typeof EventsRegistrationConfirmationTokenRoute
@@ -175,6 +182,7 @@ export interface FileRoutesByTo {
   '/schedule': typeof LayoutScheduleRoute
   '/settings': typeof LayoutSettingsRoute
   '/users': typeof LayoutUsersRoute
+  '/whats-new': typeof LayoutWhatsNewRoute
   '/events/$token': typeof EventsTokenRouteWithChildren
   '/': typeof LayoutIndexRoute
   '/events/$token/survey': typeof EventsTokenSurveyRoute
@@ -199,6 +207,7 @@ export interface FileRoutesById {
   '/_layout/schedule': typeof LayoutScheduleRoute
   '/_layout/settings': typeof LayoutSettingsRoute
   '/_layout/users': typeof LayoutUsersRoute
+  '/_layout/whats-new': typeof LayoutWhatsNewRoute
   '/events/$token': typeof EventsTokenRouteWithChildren
   '/_layout/': typeof LayoutIndexRoute
   '/events/$token/survey': typeof EventsTokenSurveyRoute
@@ -224,6 +233,7 @@ export interface FileRouteTypes {
     | '/schedule'
     | '/settings'
     | '/users'
+    | '/whats-new'
     | '/events/$token'
     | '/events/$token/survey'
     | '/events/registration/$confirmationToken'
@@ -245,6 +255,7 @@ export interface FileRouteTypes {
     | '/schedule'
     | '/settings'
     | '/users'
+    | '/whats-new'
     | '/events/$token'
     | '/'
     | '/events/$token/survey'
@@ -268,6 +279,7 @@ export interface FileRouteTypes {
     | '/_layout/schedule'
     | '/_layout/settings'
     | '/_layout/users'
+    | '/_layout/whats-new'
     | '/events/$token'
     | '/_layout/'
     | '/events/$token/survey'
@@ -336,6 +348,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/events/$token'
       preLoaderRoute: typeof EventsTokenRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/_layout/whats-new': {
+      id: '/_layout/whats-new'
+      path: '/whats-new'
+      fullPath: '/whats-new'
+      preLoaderRoute: typeof LayoutWhatsNewRouteImport
+      parentRoute: typeof LayoutRoute
     }
     '/_layout/users': {
       id: '/_layout/users'
@@ -450,6 +469,7 @@ interface LayoutRouteChildren {
   LayoutScheduleRoute: typeof LayoutScheduleRoute
   LayoutSettingsRoute: typeof LayoutSettingsRoute
   LayoutUsersRoute: typeof LayoutUsersRoute
+  LayoutWhatsNewRoute: typeof LayoutWhatsNewRoute
   LayoutIndexRoute: typeof LayoutIndexRoute
 }
 
@@ -465,6 +485,7 @@ const LayoutRouteChildren: LayoutRouteChildren = {
   LayoutScheduleRoute: LayoutScheduleRoute,
   LayoutSettingsRoute: LayoutSettingsRoute,
   LayoutUsersRoute: LayoutUsersRoute,
+  LayoutWhatsNewRoute: LayoutWhatsNewRoute,
   LayoutIndexRoute: LayoutIndexRoute,
 }
 
