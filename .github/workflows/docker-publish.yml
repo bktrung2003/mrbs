@@ -48,7 +48,7 @@ jobs:
           file: frontend/Dockerfile
           push: true
           build-args: |
-            VITE_API_URL=${{ vars.VITE_API_URL || 'http://localhost:8000' }}
+            VITE_API_URL=${{ vars.VITE_API_URL || '' }}
             NODE_ENV=production
           tags: |
             ${{ env.FRONTEND_IMAGE }}:latest

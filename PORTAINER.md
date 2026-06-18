@@ -11,13 +11,7 @@ Push to `master` builds:
 
 Make each GHCR package **Public** (or add registry credentials in Portainer).
 
-Set GitHub repo variable **`VITE_API_URL`** (Settings → Actions → Variables):
-
-```text
-http://<server-ip>:8014
-```
-
-Re-run **Build and Push Docker Images** after changing it.
+Frontend calls the API on the **same domain** (`/api/...`) via nginx proxy inside the frontend container. You do **not** need `VITE_API_URL` unless the API is on a separate host.
 
 ## 2. Portainer stack
 
@@ -58,5 +52,5 @@ Stack → **Pull and redeploy** after CI finishes.
 |---------|-----|
 | Stack fails to parse env | Use `portainer.env.example` — only 4 required vars |
 | `prestart` exits 1 | Check `DB_PASSWORD` matches postgres; logs: container `mrbs-prestart` |
-| Web loads, login/API fails | Set `VITE_API_URL=http://<server-ip>:8014` on GitHub, rebuild images, redeploy |
-| CORS error | `FRONTEND_URL` must be exact browser URL |
+| Web loads, login/API fails | Redeploy after CI rebuild; API must be same-origin `/api` (see compose nginx proxy) |
+| CORS error | Set `FRONTEND_URL=https://mrbs2.fusionhotelgroup.com` (exact browser URL, no trailing slash) |

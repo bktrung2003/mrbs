@@ -127,6 +127,7 @@ function Login() {
                           placeholder="you@company.com"
                           type="email"
                           autoComplete="username"
+                          className="bg-white text-stone-900 placeholder:text-stone-400"
                           {...field}
                         />
                       </FormControl>
@@ -146,6 +147,7 @@ function Login() {
                           data-testid="password-input"
                           placeholder="Password"
                           autoComplete="current-password"
+                          className="bg-white text-stone-900 placeholder:text-stone-400"
                           {...field}
                         />
                       </FormControl>
