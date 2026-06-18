@@ -6,6 +6,7 @@ from fastapi import APIRouter, HTTPException
 from sqlmodel import col, func, select
 
 from app.api.deps import CurrentUser, SessionDep
+from app.api.routes.branding import DEFAULT_COLOR_LOGO, resolve_logo_url
 from app.core.config import settings
 from app.core.permissions import can_approve_bookings
 from app.models import (
@@ -144,7 +145,7 @@ def _event_public(session: SessionDep, booking: Booking) -> PublicEventPublic:
         survey_open=is_survey_open(booking),
         company_name=branding.company_name,
         system_name=branding.system_name,
-        logo_color_url=branding.logo_color_url,
+        logo_color_url=resolve_logo_url(branding.logo_color_url, DEFAULT_COLOR_LOGO),
     )
 
 
