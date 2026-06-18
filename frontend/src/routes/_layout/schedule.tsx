@@ -158,6 +158,9 @@ function SchedulePage() {
   }, [selectedDate, view])
 
   const toolbarHint = useMemo(() => {
+    if (guestMode && isMobile && view === "day") {
+      return "Events listed per room · sign in to book"
+    }
     if (guestMode) {
       return "View-only schedule — sign in to book a room"
     }
@@ -450,25 +453,23 @@ function SchedulePage() {
               onClick={openNewBooking}
             >
               <Plus className="h-4 w-4" />
-              <span className="hidden sm:inline">New booking</span>
-              <span className="sm:hidden">Book</span>
+              <span className="hidden sm:inline">
+                {guestMode ? "Sign in to book" : "New booking"}
+              </span>
+              <span className="sm:hidden">{guestMode ? "Sign in" : "Book"}</span>
             </Button>
           </div>
         </div>
 
-        <div
-          className={`${theme.card} flex min-h-0 flex-1 flex-col overflow-hidden${
-            guestMode ? "" : " md:flex-row"
-          }`}
-        >
+        <div className={`${theme.card} flex min-h-0 flex-1 flex-col overflow-hidden md:flex-row`}>
           {view !== "month" ? (
-            <div className={guestMode ? "shrink-0 border-b border-slate-100" : "hidden md:block"}>
+            <div className="hidden md:block">
               <MiniCalendar
                 selectedDate={selectedDate}
                 onSelectDate={setSelectedDate}
                 bookings={miniCalendarBookings}
-                confirmedCount={guestMode ? 0 : selectedDayStats.confirmed}
-                pendingCount={guestMode ? 0 : selectedDayStats.pending}
+                confirmedCount={selectedDayStats.confirmed}
+                pendingCount={selectedDayStats.pending}
               />
             </div>
           ) : null}
@@ -478,42 +479,30 @@ function SchedulePage() {
               <p className="text-sm text-slate-500">Loading schedule…</p>
             </div>
           ) : view === "day" ? (
-            guestMode ? (
-              <div className="flex min-h-0 flex-1 overflow-auto">
+            <>
+              <div className="flex min-h-0 flex-1 flex-col overflow-auto md:hidden">
+                <MobileDayRoomGrid
+                  rooms={rooms}
+                  bookings={bookings}
+                  selectedDate={selectedDate}
+                  viewOnly={guestMode}
+                  onSlotClick={(room, label) => openNew(label, { roomId: room.id })}
+                  onBookingClick={openBooking}
+                  onNewBooking={openNewBooking}
+                />
+              </div>
+              <div className="hidden min-h-0 flex-1 md:flex">
                 <DayScheduleGrid
                   rooms={rooms}
                   bookings={bookings}
                   selectedDate={selectedDate}
-                  canEditBooking={() => false}
+                  canEditBooking={guestMode ? () => false : canEditBooking}
                   onSlotClick={(room, label) => openNew(label, { roomId: room.id })}
                   onBookingClick={openBooking}
+                  onBookingReschedule={guestMode ? undefined : handleReschedule}
                 />
               </div>
-            ) : (
-              <>
-                <div className="flex min-h-0 flex-1 flex-col overflow-auto md:hidden">
-                  <MobileDayRoomGrid
-                    rooms={rooms}
-                    bookings={bookings}
-                    selectedDate={selectedDate}
-                    onSlotClick={(room, label) => openNew(label, { roomId: room.id })}
-                    onBookingClick={openBooking}
-                    onNewBooking={openNewBooking}
-                  />
-                </div>
-                <div className="hidden min-h-0 flex-1 md:flex">
-                  <DayScheduleGrid
-                    rooms={rooms}
-                    bookings={bookings}
-                    selectedDate={selectedDate}
-                    canEditBooking={canEditBooking}
-                    onSlotClick={(room, label) => openNew(label, { roomId: room.id })}
-                    onBookingClick={openBooking}
-                    onBookingReschedule={handleReschedule}
-                  />
-                </div>
-              </>
-            )
+            </>
           ) : view === "week" ? (
             <WeekScheduleGrid
               rooms={rooms}
@@ -555,7 +544,7 @@ function SchedulePage() {
             </span>
           ) : null}
           {view === "day" ? (
-            <span className="inline-flex items-center gap-2 rounded-full border border-stone-200 bg-white px-3 py-1 text-xs text-[#5C5C5C]">
+            <span className="inline-flex items-center gap-2 rounded-full border border-stone-200 bg-white px-3 py-1 text-xs text-[#5C5C5C] md:inline-flex">
               <span className="h-1 w-6 rounded bg-[#F59E42]" />
               Current time
             </span>

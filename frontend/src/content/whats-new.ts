@@ -1,5 +1,5 @@
 /** In-app release notes — keep in sync with CHANGELOG.md and VERSION. */
-export const APP_VERSION = "1.0.1"
+export const APP_VERSION = "1.0.2"
 
 export type ReleaseNote = {
   version: string
@@ -8,6 +8,13 @@ export type ReleaseNote = {
 }
 
 export const RELEASE_NOTES: ReleaseNote[] = [
+  {
+    version: "1.0.2",
+    date: "16/06/2026",
+    items: [
+      "Lịch mobile (khách) — giao diện mobile đúng như app: danh sách phòng, timeline, sự kiện; bấm đặt phòng → đăng nhập",
+    ],
+  },
   {
     version: "1.0.1",
     date: "16/06/2026",

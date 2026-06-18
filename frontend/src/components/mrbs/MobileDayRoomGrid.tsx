@@ -31,6 +31,8 @@ type MobileDayRoomGridProps = {
   onSlotClick: (room: Room, timeLabel: string) => void
   onBookingClick: (booking: Booking) => void
   onNewBooking: () => void
+  /** Public schedule: same mobile UI, booking actions redirect via parent handlers */
+  viewOnly?: boolean
 }
 
 const SCHEDULE_SPAN = SCHEDULE_END - SCHEDULE_START
@@ -46,11 +48,13 @@ function RoomTimeline({
   roomBookings,
   onFreeSlotClick,
   onBookingClick,
+  viewOnly,
 }: {
   freeSlots: ScheduleTimeRange[]
   roomBookings: Booking[]
   onFreeSlotClick: (startMin: number) => void
   onBookingClick: (booking: Booking) => void
+  viewOnly?: boolean
 }) {
   const occupied = roomBookings
     .map((b) => ({
@@ -79,16 +83,32 @@ function RoomTimeline({
         ))}
         {occupied.map(({ start, end, booking }) => {
           const active = isBookingActive(booking.start_time, booking.end_time)
+          const blockClass = `absolute inset-y-0 overflow-hidden px-0.5 text-left ${
+            booking.booking_type === "external"
+              ? "bg-stone-400/90"
+              : "bg-[#F59E42]/90"
+          } ${active ? "ring-2 ring-inset ring-white/80" : ""}`
+          const style = segmentStyle(start, end)
+          if (viewOnly) {
+            return (
+              <div
+                key={booking.id}
+                className={blockClass}
+                style={style}
+                title={booking.title}
+              >
+                <span className="block truncate px-0.5 text-[8px] leading-tight font-semibold text-white">
+                  {booking.title}
+                </span>
+              </div>
+            )
+          }
           return (
             <button
               key={booking.id}
               type="button"
-              className={`absolute inset-y-0 overflow-hidden px-0.5 text-left ${
-                booking.booking_type === "external"
-                  ? "bg-stone-400/90"
-                  : "bg-[#F59E42]/90"
-              } ${active ? "ring-2 ring-inset ring-white/80" : ""}`}
-              style={segmentStyle(start, end)}
+              className={blockClass}
+              style={style}
               title={booking.title}
               onClick={() => onBookingClick(booking)}
             >
@@ -102,11 +122,11 @@ function RoomTimeline({
       <div className="mt-1 flex justify-between text-[10px] text-slate-400">
         <span className="inline-flex items-center gap-1">
           <span className="h-2 w-2 rounded-sm bg-emerald-200 ring-1 ring-emerald-300" />
-          Free · tap to book
+          {viewOnly ? "Free · sign in to book" : "Free · tap to book"}
         </span>
         <span className="inline-flex items-center gap-1">
           <span className="h-2 w-2 rounded-sm bg-[#F59E42]/90" />
-          Booked · tap for details
+          {viewOnly ? "Booked" : "Booked · tap for details"}
         </span>
       </div>
     </div>
@@ -116,9 +136,11 @@ function RoomTimeline({
 function RoomMeetingsList({
   roomBookings,
   onBookingClick,
+  viewOnly,
 }: {
   roomBookings: Booking[]
   onBookingClick: (booking: Booking) => void
+  viewOnly?: boolean
 }) {
   if (roomBookings.length === 0) return null
 
@@ -133,6 +155,40 @@ function RoomMeetingsList({
           const pending = booking.approval_status === "pending"
           return (
             <li key={booking.id}>
+              {viewOnly ? (
+                <div
+                  className={`flex w-full gap-2 rounded-xl border px-3 py-2.5 text-left ${
+                    active
+                      ? "border-[#FBC081] bg-[#FEF3E8]"
+                      : "border-slate-200 bg-slate-50/80"
+                  }`}
+                >
+                  <div
+                    className={`mt-1 h-10 w-1 shrink-0 rounded-full ${
+                      booking.booking_type === "external"
+                        ? "bg-stone-400"
+                        : "bg-[#F59E42]"
+                    }`}
+                  />
+                  <div className="min-w-0 flex-1">
+                    <div className="flex flex-wrap items-center gap-1.5">
+                      <p className="truncate font-medium text-slate-900">
+                        {booking.title}
+                      </p>
+                      {active ? (
+                        <span className="rounded-full bg-[#F59E42] px-2 py-0.5 text-[10px] font-bold text-white">
+                          NOW
+                        </span>
+                      ) : null}
+                    </div>
+                    <p className="mt-0.5 flex items-center gap-1 text-xs text-slate-600">
+                      <Clock className="h-3 w-3 shrink-0" />
+                      {formatDateTimeLabel(booking.start_time).split(", ").pop()} –{" "}
+                      {formatDateTimeLabel(booking.end_time).split(", ").pop()}
+                    </p>
+                  </div>
+                </div>
+              ) : (
               <button
                 type="button"
                 className={`flex w-full gap-2 rounded-xl border px-3 py-2.5 text-left active:bg-slate-50 ${
@@ -177,6 +233,7 @@ function RoomMeetingsList({
                   ) : null}
                 </div>
               </button>
+              )}
             </li>
           )
         })}
@@ -191,12 +248,14 @@ function RoomCard({
   selectedDate,
   onSlotClick,
   onBookingClick,
+  viewOnly,
 }: {
   room: Room
   bookings: Booking[]
   selectedDate: Date
   onSlotClick: (room: Room, timeLabel: string) => void
   onBookingClick: (booking: Booking) => void
+  viewOnly?: boolean
 }) {
   const roomBookings = bookingsForRoomOnDay(room.id, bookings, selectedDate)
   const freeSlots = computeFreeSlots(roomBookings)
@@ -230,6 +289,7 @@ function RoomCard({
       <RoomMeetingsList
         roomBookings={roomBookings}
         onBookingClick={onBookingClick}
+        viewOnly={viewOnly}
       />
 
       {fullyBooked ? (
@@ -251,11 +311,12 @@ function RoomCard({
               onSlotClick(room, minutesToSlotLabel(startMin))
             }
             onBookingClick={onBookingClick}
+            viewOnly={viewOnly}
           />
 
           <div className="mt-3">
             <p className="mb-1.5 text-[10px] font-semibold tracking-wide text-slate-400 uppercase">
-              Open slots · tap to book
+              {viewOnly ? "Open slots · sign in to book" : "Open slots · tap to book"}
             </p>
             <div className="flex flex-wrap gap-1.5">
               {freeSlots.map((slot) => (
@@ -285,6 +346,7 @@ export function MobileDayRoomGrid({
   onSlotClick,
   onBookingClick,
   onNewBooking,
+  viewOnly = false,
 }: MobileDayRoomGridProps) {
   const isToday = isSameDay(selectedDate, new Date())
   const availableNow = countRoomsAvailableNow(rooms, bookings, selectedDate)
@@ -319,7 +381,8 @@ export function MobileDayRoomGrid({
         )}
         <span className="text-[#B45309]/90">
           {" "}
-          · Events listed per room · green = bookable
+          · Events listed per room ·{" "}
+          {viewOnly ? "sign in to book" : "green = bookable"}
         </span>
       </div>
 
@@ -331,6 +394,7 @@ export function MobileDayRoomGrid({
           selectedDate={selectedDate}
           onSlotClick={onSlotClick}
           onBookingClick={onBookingClick}
+          viewOnly={viewOnly}
         />
       ))}
 
@@ -340,7 +404,7 @@ export function MobileDayRoomGrid({
         className="mb-2 w-full border-[#FBC081] text-[#E8872E]"
         onClick={onNewBooking}
       >
-        Quick book
+        {viewOnly ? "Sign in to book" : "Quick book"}
       </Button>
     </div>
   )

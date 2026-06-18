@@ -2,6 +2,10 @@
 
 Cập nhật tính năng dành cho người dùng MRBS. Mỗi phiên bản tương ứng một lần deploy production.
 
+## 1.0.2 — 16/06/2026
+
+- **Lịch mobile (khách)** — giao diện mobile đúng như app (danh sách phòng, timeline, sự kiện); chỉ xem, bấm đặt phòng → đăng nhập
+
 ## 1.0.1 — 16/06/2026
 
 - **Lịch mobile (khách)** — xem schedule public giống desktop: lưới ngày, tuần, tháng; đặt phòng cần đăng nhập
