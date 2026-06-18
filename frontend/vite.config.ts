@@ -24,8 +24,6 @@ export default defineConfig({
       includeAssets: [
         "pwa-icon.svg",
         "assets/images/favicon.png",
-        "assets/images/fusion-logo-color.png",
-        "assets/images/fusion-logo-white.png",
       ],
       manifest: {
         name: "Fusion Hotel Group MRBS",

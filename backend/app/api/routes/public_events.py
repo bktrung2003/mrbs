@@ -145,7 +145,9 @@ def _event_public(session: SessionDep, booking: Booking) -> PublicEventPublic:
         survey_open=is_survey_open(booking),
         company_name=branding.company_name,
         system_name=branding.system_name,
-        logo_color_url=resolve_logo_url(branding.logo_color_url, DEFAULT_COLOR_LOGO),
+        logo_color_url=resolve_logo_url(
+            branding.logo_color_url, DEFAULT_COLOR_LOGO, branding
+        ),
     )
 
 
