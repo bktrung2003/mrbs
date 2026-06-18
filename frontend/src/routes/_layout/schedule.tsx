@@ -12,7 +12,7 @@ import {
 import { DayScheduleGrid } from "@/components/mrbs/DayScheduleGrid"
 import type { BookingReschedulePayload } from "@/components/mrbs/DraggableScheduleBookingBlock"
 import { MiniCalendar } from "@/components/mrbs/MiniCalendar"
-import { MobileScheduleList } from "@/components/mrbs/MobileScheduleList"
+import { MobileDayRoomGrid } from "@/components/mrbs/MobileDayRoomGrid"
 import { MonthScheduleGrid } from "@/components/mrbs/MonthScheduleGrid"
 import { MrbsHeader } from "@/components/mrbs/MrbsHeader"
 import { WeekScheduleGrid } from "@/components/mrbs/WeekScheduleGrid"
@@ -154,7 +154,7 @@ function SchedulePage() {
 
   const toolbarHint = useMemo(() => {
     if (isMobile && view === "day") {
-      return "Tap a meeting for details · use + to book"
+      return "Green = free · tap a slot to book a room"
     }
     if (view === "day") {
       return "Drag bookings to move · drag bottom edge to extend time"
@@ -429,8 +429,11 @@ function SchedulePage() {
           ) : view === "day" ? (
             <>
               <div className="flex min-h-0 flex-1 flex-col overflow-auto md:hidden">
-                <MobileScheduleList
+                <MobileDayRoomGrid
+                  rooms={rooms}
                   bookings={bookings}
+                  selectedDate={selectedDate}
+                  onSlotClick={(room, label) => openNew(label, { roomId: room.id })}
                   onBookingClick={openBooking}
                   onNewBooking={openNewBooking}
                 />

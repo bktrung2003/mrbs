@@ -246,6 +246,126 @@ export function bookingsForDay(bookings: { start_time: string }[], day: Date) {
   )
 }
 
+export type ScheduleTimeRange = { startMin: number; endMin: number }
+
+export function minutesToSlotLabel(minutes: number): string {
+  const h = Math.floor(minutes / 60)
+  const m = minutes % 60
+  const period = h >= 12 ? "PM" : "AM"
+  const displayHour = h > 12 ? h - 12 : h === 0 ? 12 : h
+  return `${displayHour.toString().padStart(2, "0")}:${m.toString().padStart(2, "0")} ${period}`
+}
+
+export function bookingsForRoomOnDay(
+  roomId: string,
+  bookings: { room_id: string; start_time: string; end_time: string }[],
+  day: Date,
+) {
+  return bookings
+    .filter((b) => b.room_id === roomId)
+    .filter((b) => isSameDay(new Date(b.start_time), day))
+    .sort(
+      (a, b) =>
+        minutesFromMidnight(a.start_time) - minutesFromMidnight(b.start_time),
+    )
+}
+
+export function computeFreeSlots(
+  dayBookings: { start_time: string; end_time: string }[],
+): ScheduleTimeRange[] {
+  const occupied = dayBookings
+    .map((b) => ({
+      start: Math.max(SCHEDULE_START, minutesFromMidnight(b.start_time)),
+      end: Math.min(SCHEDULE_END, minutesFromMidnight(b.end_time)),
+    }))
+    .filter((o) => o.end > o.start)
+    .sort((a, b) => a.start - b.start)
+
+  const merged: ScheduleTimeRange[] = []
+  for (const block of occupied) {
+    const last = merged[merged.length - 1]
+    if (last && block.start <= last.endMin) {
+      last.endMin = Math.max(last.endMin, block.end)
+    } else {
+      merged.push({ startMin: block.start, endMin: block.end })
+    }
+  }
+
+  const free: ScheduleTimeRange[] = []
+  let cursor = SCHEDULE_START
+  for (const block of merged) {
+    if (block.startMin > cursor) {
+      free.push({ startMin: cursor, endMin: block.startMin })
+    }
+    cursor = Math.max(cursor, block.endMin)
+  }
+  if (cursor < SCHEDULE_END) {
+    free.push({ startMin: cursor, endMin: SCHEDULE_END })
+  }
+  return free
+}
+
+export function formatSlotRange(startMin: number, endMin: number): string {
+  return `${minutesToSlotLabel(startMin)} – ${minutesToSlotLabel(endMin)}`
+}
+
+export function roomAvailabilitySummary(
+  freeSlots: ScheduleTimeRange[],
+  selectedDate: Date,
+  now = new Date(),
+): { label: string; tone: "free" | "busy" | "full" } {
+  if (freeSlots.length === 0) {
+    return { label: "Fully booked", tone: "full" }
+  }
+  const isToday = isSameDay(selectedDate, now)
+  const nowMin = now.getHours() * 60 + now.getMinutes()
+
+  if (isToday && nowMin >= SCHEDULE_START && nowMin < SCHEDULE_END) {
+    const current = freeSlots.find(
+      (s) => nowMin >= s.startMin && nowMin < s.endMin,
+    )
+    if (current) {
+      return { label: "Available now", tone: "free" }
+    }
+    const nextFree = freeSlots.find((s) => s.startMin > nowMin)
+    if (nextFree) {
+      return {
+        label: `Busy until ${minutesToSlotLabel(nextFree.startMin)}`,
+        tone: "busy",
+      }
+    }
+    return { label: "Fully booked", tone: "full" }
+  }
+
+  const totalFreeMinutes = freeSlots.reduce(
+    (sum, s) => sum + (s.endMin - s.startMin),
+    0,
+  )
+  const hours = Math.floor(totalFreeMinutes / 60)
+  const mins = totalFreeMinutes % 60
+  if (hours === 0) {
+    return { label: `${mins}m free today`, tone: "free" }
+  }
+  if (mins === 0) {
+    return { label: `${hours}h free today`, tone: "free" }
+  }
+  return { label: `${hours}h ${mins}m free today`, tone: "free" }
+}
+
+export function countRoomsAvailableNow(
+  rooms: { id: string }[],
+  bookings: { room_id: string; start_time: string; end_time: string }[],
+  selectedDate: Date,
+  now = new Date(),
+): number {
+  if (!isSameDay(selectedDate, now)) return 0
+  const nowMin = now.getHours() * 60 + now.getMinutes()
+  return rooms.filter((room) => {
+    const free = computeFreeSlots(bookingsForRoomOnDay(room.id, bookings, selectedDate))
+    return free.some((s) => nowMin >= s.startMin && nowMin < s.endMin)
+  }).length
+}
+
 export function dayBookingStats(
   bookings: {
     approval_status?: "pending" | "approved" | "rejected" | null
