@@ -22,19 +22,17 @@ jobs:
     timeout-minutes: 30
     steps:
       - name: Checkout
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-        with:
-          persist-credentials: false
+        uses: actions/checkout@v4
 
       - name: Log in to GHCR
-        uses: docker/login-action@5e57cd29f154a8953babb0676bead5e5c3a6237 # v3.6.0
+        uses: docker/login-action@v3
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build and push backend
-        uses: docker/build-push-action@263435318d21b8e681c144c4ee519f940e702b6 # v6.18.0
+        uses: docker/build-push-action@v6
         with:
           context: .
           file: backend/Dockerfile
@@ -44,7 +42,7 @@ jobs:
             ${{ env.BACKEND_IMAGE }}:${{ github.sha }}
 
       - name: Build and push frontend
-        uses: docker/build-push-action@263435318d21b8e681c144c4ee519f940e702b6 # v6.18.0
+        uses: docker/build-push-action@v6
         with:
           context: .
           file: frontend/Dockerfile
