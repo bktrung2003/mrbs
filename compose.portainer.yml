@@ -97,7 +97,7 @@ services:
       backend:
         condition: service_healthy
     ports:
-      - "${FRONTEND_PORT:-80}:80"
+      - "${FRONTEND_PORT:-3014}:80"
 
 volumes:
   mrbs-db-data:

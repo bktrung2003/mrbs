@@ -22,10 +22,12 @@ Every push to `master` builds and pushes:
 5. Environment variables: copy from `.env.example` and set real secrets (`SECRET_KEY`, `POSTGRES_PASSWORD`, `FIRST_SUPERUSER_PASSWORD`, etc.)
 6. Deploy
 
-Default ports:
+Default ports (host → container):
 
-- Frontend: `80` → web app
-- Backend API: `8000` → `/docs`
+- Frontend: `3014` → `80` (web app at `http://<server-ip>:3014`)
+- Backend API: `8000` → `8000` (`/docs` at `http://<server-ip>:8000`)
+
+Set `FRONTEND_PORT=3014` and include `:3014` in `BACKEND_CORS_ORIGINS` / `FRONTEND_HOST` in your stack env.
 
 ## 3. Update after a new push
 
