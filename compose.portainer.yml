@@ -1,103 +1,120 @@
-# Portainer stack — pull pre-built images from GHCR (no local build).
-# Repository: https://github.com/bktrung2003/mrbs
+version: '3.8'
+
+# Portainer stack — pull images from GHCR (built by GitHub Actions).
+# Repo: https://github.com/bktrung2003/mrbs
 #
-# 1. GitHub Actions pushes images on each push to master.
-# 2. In Portainer: Stacks → Add stack → Git repository
-#    - Repository URL: https://github.com/bktrung2003/mrbs
-#    - Compose path: compose.portainer.yml
-# 3. Set environment variables from .env.example (or upload as env file).
-# 4. Make the GHCR package public OR add a registry credential in Portainer.
+# Portainer → Stacks → Git repository
+#   Compose path: compose.portainer.yml
+#   Env: copy portainer.env.example → set DB_PASSWORD, SECRET_KEY, etc.
 
 services:
 
-  db:
-    image: postgres:18
+  mrbs-frontend:
+    image: ghcr.io/bktrung2003/mrbs-frontend:latest
+    container_name: mrbs-frontend
     restart: unless-stopped
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
-      interval: 10s
-      retries: 5
-      start_period: 30s
-      timeout: 10s
-    volumes:
-      - mrbs-db-data:/var/lib/postgresql/data/pgdata
-    environment:
-      PGDATA: /var/lib/postgresql/data/pgdata
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD?Variable not set}
-      POSTGRES_USER: ${POSTGRES_USER?Variable not set}
-      POSTGRES_DB: ${POSTGRES_DB?Variable not set}
-
-  prestart:
-    image: "${DOCKER_IMAGE_BACKEND?Variable not set}:${TAG-latest}"
-    restart: "no"
-    depends_on:
-      db:
-        condition: service_healthy
-    command: bash scripts/prestart.sh
-    environment:
-      DOMAIN: ${DOMAIN:-localhost}
-      FRONTEND_HOST: ${FRONTEND_HOST?Variable not set}
-      ENVIRONMENT: ${ENVIRONMENT:-production}
-      TIMEZONE: ${TIMEZONE:-Asia/Ho_Chi_Minh}
-      BACKEND_CORS_ORIGINS: ${BACKEND_CORS_ORIGINS}
-      SECRET_KEY: ${SECRET_KEY?Variable not set}
-      FIRST_SUPERUSER: ${FIRST_SUPERUSER?Variable not set}
-      FIRST_SUPERUSER_PASSWORD: ${FIRST_SUPERUSER_PASSWORD?Variable not set}
-      SMTP_HOST: ${SMTP_HOST:-}
-      SMTP_USER: ${SMTP_USER:-}
-      SMTP_PASSWORD: ${SMTP_PASSWORD:-}
-      EMAILS_FROM_EMAIL: ${EMAILS_FROM_EMAIL:-}
-      POSTGRES_SERVER: db
-      POSTGRES_PORT: ${POSTGRES_PORT:-5432}
-      POSTGRES_DB: ${POSTGRES_DB}
-      POSTGRES_USER: ${POSTGRES_USER?Variable not set}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD?Variable not set}
-      SENTRY_DSN: ${SENTRY_DSN:-}
-
-  backend:
-    image: "${DOCKER_IMAGE_BACKEND?Variable not set}:${TAG-latest}"
-    restart: unless-stopped
-    depends_on:
-      db:
-        condition: service_healthy
-      prestart:
-        condition: service_completed_successfully
     ports:
-      - "${BACKEND_PORT:-8000}:8000"
+      - "3014:80"
+    depends_on:
+      mrbs-backend:
+        condition: service_healthy
+    networks:
+      - mrbs-network
+
+  mrbs-backend:
+    image: ghcr.io/bktrung2003/mrbs-backend:latest
+    container_name: mrbs-backend
+    hostname: mrbs-backend
+    restart: unless-stopped
+    ports:
+      - "8014:8000"
     environment:
-      DOMAIN: ${DOMAIN:-localhost}
-      FRONTEND_HOST: ${FRONTEND_HOST?Variable not set}
-      ENVIRONMENT: ${ENVIRONMENT:-production}
-      TIMEZONE: ${TIMEZONE:-Asia/Ho_Chi_Minh}
-      BACKEND_CORS_ORIGINS: ${BACKEND_CORS_ORIGINS}
-      SECRET_KEY: ${SECRET_KEY?Variable not set}
-      FIRST_SUPERUSER: ${FIRST_SUPERUSER?Variable not set}
-      FIRST_SUPERUSER_PASSWORD: ${FIRST_SUPERUSER_PASSWORD?Variable not set}
-      SMTP_HOST: ${SMTP_HOST:-}
-      SMTP_USER: ${SMTP_USER:-}
-      SMTP_PASSWORD: ${SMTP_PASSWORD:-}
-      EMAILS_FROM_EMAIL: ${EMAILS_FROM_EMAIL:-}
-      POSTGRES_SERVER: db
-      POSTGRES_PORT: ${POSTGRES_PORT:-5432}
-      POSTGRES_DB: ${POSTGRES_DB}
-      POSTGRES_USER: ${POSTGRES_USER?Variable not set}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD?Variable not set}
-      SENTRY_DSN: ${SENTRY_DSN:-}
+      - PROJECT_NAME=Fusion Hotel Group MRBS
+      - ENVIRONMENT=production
+      - TIMEZONE=Asia/Ho_Chi_Minh
+      - SECRET_KEY=${SECRET_KEY}
+      - FIRST_SUPERUSER=admin@example.com
+      - FIRST_SUPERUSER_PASSWORD=${FIRST_SUPERUSER_PASSWORD}
+      - FRONTEND_HOST=${FRONTEND_URL}
+      - BACKEND_CORS_ORIGINS=${FRONTEND_URL}
+      - POSTGRES_SERVER=postgres
+      - POSTGRES_PORT=5432
+      - POSTGRES_DB=mrbs
+      - POSTGRES_USER=mrbs_user
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+      - SMTP_HOST=${SMTP_HOST:-}
+      - SMTP_PORT=${SMTP_PORT:-587}
+      - SMTP_USER=${SMTP_USER:-}
+      - SMTP_PASSWORD=${SMTP_PASSWORD:-}
+      - EMAILS_FROM_EMAIL=${EMAILS_FROM_EMAIL:-}
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/api/v1/utils/health-check/"]
-      interval: 15s
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 40s
+    depends_on:
+      postgres:
+        condition: service_healthy
+      mrbs-prestart:
+        condition: service_completed_successfully
+    networks:
+      - mrbs-network
+
+  mrbs-prestart:
+    image: ghcr.io/bktrung2003/mrbs-backend:latest
+    container_name: mrbs-prestart
+    restart: "no"
+    command: bash scripts/prestart.sh
+    environment:
+      - PROJECT_NAME=Fusion Hotel Group MRBS
+      - ENVIRONMENT=production
+      - TIMEZONE=Asia/Ho_Chi_Minh
+      - SECRET_KEY=${SECRET_KEY}
+      - FIRST_SUPERUSER=admin@example.com
+      - FIRST_SUPERUSER_PASSWORD=${FIRST_SUPERUSER_PASSWORD}
+      - FRONTEND_HOST=${FRONTEND_URL}
+      - BACKEND_CORS_ORIGINS=${FRONTEND_URL}
+      - POSTGRES_SERVER=postgres
+      - POSTGRES_PORT=5432
+      - POSTGRES_DB=mrbs
+      - POSTGRES_USER=mrbs_user
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+      - SMTP_HOST=${SMTP_HOST:-}
+      - SMTP_PORT=${SMTP_PORT:-587}
+      - SMTP_USER=${SMTP_USER:-}
+      - SMTP_PASSWORD=${SMTP_PASSWORD:-}
+      - EMAILS_FROM_EMAIL=${EMAILS_FROM_EMAIL:-}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - mrbs-network
+
+  postgres:
+    image: postgres:15-alpine
+    container_name: mrbs-postgres
+    restart: unless-stopped
+    volumes:
+      - mrbs_postgres_data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_DB=mrbs
+      - POSTGRES_USER=mrbs_user
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+      - POSTGRES_INITDB_ARGS=--encoding=UTF8 --locale=C
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U mrbs_user -d mrbs"]
+      interval: 10s
       timeout: 5s
       retries: 5
-      start_period: 40s
-
-  frontend:
-    image: "${DOCKER_IMAGE_FRONTEND?Variable not set}:${TAG-latest}"
-    restart: unless-stopped
-    depends_on:
-      backend:
-        condition: service_healthy
-    ports:
-      - "${FRONTEND_PORT:-3014}:80"
+      start_period: 10s
+    networks:
+      - mrbs-network
 
 volumes:
-  mrbs-db-data:
+  mrbs_postgres_data:
+    driver: local
+
+networks:
+  mrbs-network:
+    driver: bridge

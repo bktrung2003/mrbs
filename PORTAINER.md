@@ -1,39 +1,62 @@
 # Deploy MRBS with Portainer
 
-## 1. GitHub Actions (automatic)
+## 1. Images (GitHub Actions)
 
-Every push to `master` builds and pushes:
+Push to `master` builds:
 
 | Image | Tag |
 |-------|-----|
-| `ghcr.io/bktrung2003/mrbs-backend` | `latest`, commit SHA |
-| `ghcr.io/bktrung2003/mrbs-frontend` | `latest`, commit SHA |
+| `ghcr.io/bktrung2003/mrbs-backend` | `latest` |
+| `ghcr.io/bktrung2003/mrbs-frontend` | `latest` |
 
-**First time:** open each package on GitHub → Package settings → change visibility to **Public** (or add GHCR credentials in Portainer).
+Make each GHCR package **Public** (or add registry credentials in Portainer).
 
-**Frontend API URL:** set repository variable `VITE_API_URL` (Settings → Secrets and variables → Actions → Variables) to your public API URL, e.g. `https://mrbs-api.example.com` or `http://192.168.1.10:8000`. Re-run the workflow after changing it.
+Set GitHub repo variable **`VITE_API_URL`** (Settings → Actions → Variables):
+
+```text
+http://<server-ip>:8014
+```
+
+Re-run **Build and Push Docker Images** after changing it.
 
 ## 2. Portainer stack
 
 1. **Stacks** → **Add stack** → **Git repository**
-2. Repository URL: `https://github.com/bktrung2003/mrbs`
-3. Compose path: `compose.portainer.yml`
-4. Branch: `master`
-5. Environment variables: copy from `.env.example` and set real secrets (`SECRET_KEY`, `POSTGRES_PASSWORD`, `FIRST_SUPERUSER_PASSWORD`, etc.)
+2. Repository: `https://github.com/bktrung2003/mrbs`
+3. Branch: `master`
+4. Compose path: **`compose.portainer.yml`**
+5. Environment: copy **`portainer.env.example`**, set real passwords and `FRONTEND_URL`
 6. Deploy
 
-Default ports (host → container):
+### Ports (host)
 
-- Frontend: `3014` → `80` (web app at `http://<server-ip>:3014`)
-- Backend API: `8000` → `8000` (`/docs` at `http://<server-ip>:8000`)
+| Service | Port | URL |
+|---------|------|-----|
+| Web | **3014** | `http://<server-ip>:3014` |
+| API | **8014** | `http://<server-ip>:8014/docs` |
 
-Set `FRONTEND_PORT=3014` and include `:3014` in `BACKEND_CORS_ORIGINS` / `FRONTEND_HOST` in your stack env.
+Login: `admin@example.com` / password from `FIRST_SUPERUSER_PASSWORD`
 
-## 3. Update after a new push
+## 3. Stack env (minimum)
 
-- **Webhook:** Portainer stack → Webhooks → copy URL → GitHub repo → Settings → Webhooks (optional)
-- Or click **Pull and redeploy** on the stack after CI finishes
+```env
+DB_PASSWORD=...
+SECRET_KEY=...
+FIRST_SUPERUSER_PASSWORD=...
+FRONTEND_URL=http://<server-ip>:3014
+```
 
-## 4. Traefik / HTTPS (optional)
+`FRONTEND_URL` must match the URL in the browser (scheme + IP/domain + port **3014**).
 
-For production with domains, use `compose.yml` + external Traefik network — see `deployment.md`.
+## 4. Update after push
+
+Stack → **Pull and redeploy** after CI finishes.
+
+## 5. Troubleshooting
+
+| Symptom | Fix |
+|---------|-----|
+| Stack fails to parse env | Use `portainer.env.example` — only 4 required vars |
+| `prestart` exits 1 | Check `DB_PASSWORD` matches postgres; logs: container `mrbs-prestart` |
+| Web loads, login/API fails | Set `VITE_API_URL=http://<server-ip>:8014` on GitHub, rebuild images, redeploy |
+| CORS error | `FRONTEND_URL` must be exact browser URL |
