@@ -15,9 +15,21 @@ import { Route as RecoverPasswordRouteImport } from './routes/recover-password'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as LayoutRouteImport } from './routes/_layout'
 import { Route as LayoutIndexRouteImport } from './routes/_layout/index'
+import { Route as EventsTokenRouteImport } from './routes/events/$token'
+import { Route as LayoutUsersRouteImport } from './routes/_layout/users'
 import { Route as LayoutSettingsRouteImport } from './routes/_layout/settings'
+import { Route as LayoutScheduleRouteImport } from './routes/_layout/schedule'
+import { Route as LayoutRoomsRouteImport } from './routes/_layout/rooms'
+import { Route as LayoutReportRouteImport } from './routes/_layout/report'
+import { Route as LayoutMyEventsRouteImport } from './routes/_layout/my-events'
+import { Route as LayoutMyBookingsRouteImport } from './routes/_layout/my-bookings'
 import { Route as LayoutItemsRouteImport } from './routes/_layout/items'
+import { Route as LayoutImportRouteImport } from './routes/_layout/import'
+import { Route as LayoutBrandingRouteImport } from './routes/_layout/branding'
 import { Route as LayoutAdminRouteImport } from './routes/_layout/admin'
+import { Route as EventsSurveyTokenRouteImport } from './routes/events/survey/$token'
+import { Route as EventsRegistrationConfirmationTokenRouteImport } from './routes/events/registration/$confirmationToken'
+import { Route as EventsTokenSurveyRouteImport } from './routes/events/$token/survey'
 
 const SignupRoute = SignupRouteImport.update({
   id: '/signup',
@@ -48,9 +60,44 @@ const LayoutIndexRoute = LayoutIndexRouteImport.update({
   path: '/',
   getParentRoute: () => LayoutRoute,
 } as any)
+const EventsTokenRoute = EventsTokenRouteImport.update({
+  id: '/events/$token',
+  path: '/events/$token',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LayoutUsersRoute = LayoutUsersRouteImport.update({
+  id: '/users',
+  path: '/users',
+  getParentRoute: () => LayoutRoute,
+} as any)
 const LayoutSettingsRoute = LayoutSettingsRouteImport.update({
   id: '/settings',
   path: '/settings',
+  getParentRoute: () => LayoutRoute,
+} as any)
+const LayoutScheduleRoute = LayoutScheduleRouteImport.update({
+  id: '/schedule',
+  path: '/schedule',
+  getParentRoute: () => LayoutRoute,
+} as any)
+const LayoutRoomsRoute = LayoutRoomsRouteImport.update({
+  id: '/rooms',
+  path: '/rooms',
+  getParentRoute: () => LayoutRoute,
+} as any)
+const LayoutReportRoute = LayoutReportRouteImport.update({
+  id: '/report',
+  path: '/report',
+  getParentRoute: () => LayoutRoute,
+} as any)
+const LayoutMyEventsRoute = LayoutMyEventsRouteImport.update({
+  id: '/my-events',
+  path: '/my-events',
+  getParentRoute: () => LayoutRoute,
+} as any)
+const LayoutMyBookingsRoute = LayoutMyBookingsRouteImport.update({
+  id: '/my-bookings',
+  path: '/my-bookings',
   getParentRoute: () => LayoutRoute,
 } as any)
 const LayoutItemsRoute = LayoutItemsRouteImport.update({
@@ -58,21 +105,59 @@ const LayoutItemsRoute = LayoutItemsRouteImport.update({
   path: '/items',
   getParentRoute: () => LayoutRoute,
 } as any)
+const LayoutImportRoute = LayoutImportRouteImport.update({
+  id: '/import',
+  path: '/import',
+  getParentRoute: () => LayoutRoute,
+} as any)
+const LayoutBrandingRoute = LayoutBrandingRouteImport.update({
+  id: '/branding',
+  path: '/branding',
+  getParentRoute: () => LayoutRoute,
+} as any)
 const LayoutAdminRoute = LayoutAdminRouteImport.update({
   id: '/admin',
   path: '/admin',
   getParentRoute: () => LayoutRoute,
 } as any)
+const EventsSurveyTokenRoute = EventsSurveyTokenRouteImport.update({
+  id: '/events/survey/$token',
+  path: '/events/survey/$token',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const EventsRegistrationConfirmationTokenRoute =
+  EventsRegistrationConfirmationTokenRouteImport.update({
+    id: '/events/registration/$confirmationToken',
+    path: '/events/registration/$confirmationToken',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const EventsTokenSurveyRoute = EventsTokenSurveyRouteImport.update({
+  id: '/survey',
+  path: '/survey',
+  getParentRoute: () => EventsTokenRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
+  '/': typeof LayoutIndexRoute
   '/login': typeof LoginRoute
   '/recover-password': typeof RecoverPasswordRoute
   '/reset-password': typeof ResetPasswordRoute
   '/signup': typeof SignupRoute
   '/admin': typeof LayoutAdminRoute
+  '/branding': typeof LayoutBrandingRoute
+  '/import': typeof LayoutImportRoute
   '/items': typeof LayoutItemsRoute
+  '/my-bookings': typeof LayoutMyBookingsRoute
+  '/my-events': typeof LayoutMyEventsRoute
+  '/report': typeof LayoutReportRoute
+  '/rooms': typeof LayoutRoomsRoute
+  '/schedule': typeof LayoutScheduleRoute
   '/settings': typeof LayoutSettingsRoute
-  '/': typeof LayoutIndexRoute
+  '/users': typeof LayoutUsersRoute
+  '/events/$token': typeof EventsTokenRouteWithChildren
+  '/events/$token/survey': typeof EventsTokenSurveyRoute
+  '/events/registration/$confirmationToken': typeof EventsRegistrationConfirmationTokenRoute
+  '/events/survey/$token': typeof EventsSurveyTokenRoute
 }
 export interface FileRoutesByTo {
   '/login': typeof LoginRoute
@@ -80,9 +165,21 @@ export interface FileRoutesByTo {
   '/reset-password': typeof ResetPasswordRoute
   '/signup': typeof SignupRoute
   '/admin': typeof LayoutAdminRoute
+  '/branding': typeof LayoutBrandingRoute
+  '/import': typeof LayoutImportRoute
   '/items': typeof LayoutItemsRoute
+  '/my-bookings': typeof LayoutMyBookingsRoute
+  '/my-events': typeof LayoutMyEventsRoute
+  '/report': typeof LayoutReportRoute
+  '/rooms': typeof LayoutRoomsRoute
+  '/schedule': typeof LayoutScheduleRoute
   '/settings': typeof LayoutSettingsRoute
+  '/users': typeof LayoutUsersRoute
+  '/events/$token': typeof EventsTokenRouteWithChildren
   '/': typeof LayoutIndexRoute
+  '/events/$token/survey': typeof EventsTokenSurveyRoute
+  '/events/registration/$confirmationToken': typeof EventsRegistrationConfirmationTokenRoute
+  '/events/survey/$token': typeof EventsSurveyTokenRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -92,21 +189,45 @@ export interface FileRoutesById {
   '/reset-password': typeof ResetPasswordRoute
   '/signup': typeof SignupRoute
   '/_layout/admin': typeof LayoutAdminRoute
+  '/_layout/branding': typeof LayoutBrandingRoute
+  '/_layout/import': typeof LayoutImportRoute
   '/_layout/items': typeof LayoutItemsRoute
+  '/_layout/my-bookings': typeof LayoutMyBookingsRoute
+  '/_layout/my-events': typeof LayoutMyEventsRoute
+  '/_layout/report': typeof LayoutReportRoute
+  '/_layout/rooms': typeof LayoutRoomsRoute
+  '/_layout/schedule': typeof LayoutScheduleRoute
   '/_layout/settings': typeof LayoutSettingsRoute
+  '/_layout/users': typeof LayoutUsersRoute
+  '/events/$token': typeof EventsTokenRouteWithChildren
   '/_layout/': typeof LayoutIndexRoute
+  '/events/$token/survey': typeof EventsTokenSurveyRoute
+  '/events/registration/$confirmationToken': typeof EventsRegistrationConfirmationTokenRoute
+  '/events/survey/$token': typeof EventsSurveyTokenRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
+    | '/'
     | '/login'
     | '/recover-password'
     | '/reset-password'
     | '/signup'
     | '/admin'
+    | '/branding'
+    | '/import'
     | '/items'
+    | '/my-bookings'
+    | '/my-events'
+    | '/report'
+    | '/rooms'
+    | '/schedule'
     | '/settings'
-    | '/'
+    | '/users'
+    | '/events/$token'
+    | '/events/$token/survey'
+    | '/events/registration/$confirmationToken'
+    | '/events/survey/$token'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/login'
@@ -114,9 +235,21 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/signup'
     | '/admin'
+    | '/branding'
+    | '/import'
     | '/items'
+    | '/my-bookings'
+    | '/my-events'
+    | '/report'
+    | '/rooms'
+    | '/schedule'
     | '/settings'
+    | '/users'
+    | '/events/$token'
     | '/'
+    | '/events/$token/survey'
+    | '/events/registration/$confirmationToken'
+    | '/events/survey/$token'
   id:
     | '__root__'
     | '/_layout'
@@ -125,9 +258,21 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/signup'
     | '/_layout/admin'
+    | '/_layout/branding'
+    | '/_layout/import'
     | '/_layout/items'
+    | '/_layout/my-bookings'
+    | '/_layout/my-events'
+    | '/_layout/report'
+    | '/_layout/rooms'
+    | '/_layout/schedule'
     | '/_layout/settings'
+    | '/_layout/users'
+    | '/events/$token'
     | '/_layout/'
+    | '/events/$token/survey'
+    | '/events/registration/$confirmationToken'
+    | '/events/survey/$token'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -136,6 +281,9 @@ export interface RootRouteChildren {
   RecoverPasswordRoute: typeof RecoverPasswordRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
   SignupRoute: typeof SignupRoute
+  EventsTokenRoute: typeof EventsTokenRouteWithChildren
+  EventsRegistrationConfirmationTokenRoute: typeof EventsRegistrationConfirmationTokenRoute
+  EventsSurveyTokenRoute: typeof EventsSurveyTokenRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -171,7 +319,7 @@ declare module '@tanstack/react-router' {
     '/_layout': {
       id: '/_layout'
       path: ''
-      fullPath: ''
+      fullPath: '/'
       preLoaderRoute: typeof LayoutRouteImport
       parentRoute: typeof rootRouteImport
     }
@@ -182,11 +330,60 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LayoutIndexRouteImport
       parentRoute: typeof LayoutRoute
     }
+    '/events/$token': {
+      id: '/events/$token'
+      path: '/events/$token'
+      fullPath: '/events/$token'
+      preLoaderRoute: typeof EventsTokenRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_layout/users': {
+      id: '/_layout/users'
+      path: '/users'
+      fullPath: '/users'
+      preLoaderRoute: typeof LayoutUsersRouteImport
+      parentRoute: typeof LayoutRoute
+    }
     '/_layout/settings': {
       id: '/_layout/settings'
       path: '/settings'
       fullPath: '/settings'
       preLoaderRoute: typeof LayoutSettingsRouteImport
+      parentRoute: typeof LayoutRoute
+    }
+    '/_layout/schedule': {
+      id: '/_layout/schedule'
+      path: '/schedule'
+      fullPath: '/schedule'
+      preLoaderRoute: typeof LayoutScheduleRouteImport
+      parentRoute: typeof LayoutRoute
+    }
+    '/_layout/rooms': {
+      id: '/_layout/rooms'
+      path: '/rooms'
+      fullPath: '/rooms'
+      preLoaderRoute: typeof LayoutRoomsRouteImport
+      parentRoute: typeof LayoutRoute
+    }
+    '/_layout/report': {
+      id: '/_layout/report'
+      path: '/report'
+      fullPath: '/report'
+      preLoaderRoute: typeof LayoutReportRouteImport
+      parentRoute: typeof LayoutRoute
+    }
+    '/_layout/my-events': {
+      id: '/_layout/my-events'
+      path: '/my-events'
+      fullPath: '/my-events'
+      preLoaderRoute: typeof LayoutMyEventsRouteImport
+      parentRoute: typeof LayoutRoute
+    }
+    '/_layout/my-bookings': {
+      id: '/_layout/my-bookings'
+      path: '/my-bookings'
+      fullPath: '/my-bookings'
+      preLoaderRoute: typeof LayoutMyBookingsRouteImport
       parentRoute: typeof LayoutRoute
     }
     '/_layout/items': {
@@ -196,6 +393,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LayoutItemsRouteImport
       parentRoute: typeof LayoutRoute
     }
+    '/_layout/import': {
+      id: '/_layout/import'
+      path: '/import'
+      fullPath: '/import'
+      preLoaderRoute: typeof LayoutImportRouteImport
+      parentRoute: typeof LayoutRoute
+    }
+    '/_layout/branding': {
+      id: '/_layout/branding'
+      path: '/branding'
+      fullPath: '/branding'
+      preLoaderRoute: typeof LayoutBrandingRouteImport
+      parentRoute: typeof LayoutRoute
+    }
     '/_layout/admin': {
       id: '/_layout/admin'
       path: '/admin'
@@ -203,25 +414,74 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LayoutAdminRouteImport
       parentRoute: typeof LayoutRoute
     }
+    '/events/survey/$token': {
+      id: '/events/survey/$token'
+      path: '/events/survey/$token'
+      fullPath: '/events/survey/$token'
+      preLoaderRoute: typeof EventsSurveyTokenRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/events/registration/$confirmationToken': {
+      id: '/events/registration/$confirmationToken'
+      path: '/events/registration/$confirmationToken'
+      fullPath: '/events/registration/$confirmationToken'
+      preLoaderRoute: typeof EventsRegistrationConfirmationTokenRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/events/$token/survey': {
+      id: '/events/$token/survey'
+      path: '/survey'
+      fullPath: '/events/$token/survey'
+      preLoaderRoute: typeof EventsTokenSurveyRouteImport
+      parentRoute: typeof EventsTokenRoute
+    }
   }
 }
 
 interface LayoutRouteChildren {
   LayoutAdminRoute: typeof LayoutAdminRoute
+  LayoutBrandingRoute: typeof LayoutBrandingRoute
+  LayoutImportRoute: typeof LayoutImportRoute
   LayoutItemsRoute: typeof LayoutItemsRoute
+  LayoutMyBookingsRoute: typeof LayoutMyBookingsRoute
+  LayoutMyEventsRoute: typeof LayoutMyEventsRoute
+  LayoutReportRoute: typeof LayoutReportRoute
+  LayoutRoomsRoute: typeof LayoutRoomsRoute
+  LayoutScheduleRoute: typeof LayoutScheduleRoute
   LayoutSettingsRoute: typeof LayoutSettingsRoute
+  LayoutUsersRoute: typeof LayoutUsersRoute
   LayoutIndexRoute: typeof LayoutIndexRoute
 }
 
 const LayoutRouteChildren: LayoutRouteChildren = {
   LayoutAdminRoute: LayoutAdminRoute,
+  LayoutBrandingRoute: LayoutBrandingRoute,
+  LayoutImportRoute: LayoutImportRoute,
   LayoutItemsRoute: LayoutItemsRoute,
+  LayoutMyBookingsRoute: LayoutMyBookingsRoute,
+  LayoutMyEventsRoute: LayoutMyEventsRoute,
+  LayoutReportRoute: LayoutReportRoute,
+  LayoutRoomsRoute: LayoutRoomsRoute,
+  LayoutScheduleRoute: LayoutScheduleRoute,
   LayoutSettingsRoute: LayoutSettingsRoute,
+  LayoutUsersRoute: LayoutUsersRoute,
   LayoutIndexRoute: LayoutIndexRoute,
 }
 
 const LayoutRouteWithChildren =
   LayoutRoute._addFileChildren(LayoutRouteChildren)
+
+interface EventsTokenRouteChildren {
+  EventsTokenSurveyRoute: typeof EventsTokenSurveyRoute
+}
+
+const EventsTokenRouteChildren: EventsTokenRouteChildren = {
+  EventsTokenSurveyRoute: EventsTokenSurveyRoute,
+}
+
+const EventsTokenRouteWithChildren = EventsTokenRoute._addFileChildren(
+  EventsTokenRouteChildren,
+)
 
 const rootRouteChildren: RootRouteChildren = {
   LayoutRoute: LayoutRouteWithChildren,
@@ -229,6 +489,10 @@ const rootRouteChildren: RootRouteChildren = {
   RecoverPasswordRoute: RecoverPasswordRoute,
   ResetPasswordRoute: ResetPasswordRoute,
   SignupRoute: SignupRoute,
+  EventsTokenRoute: EventsTokenRouteWithChildren,
+  EventsRegistrationConfirmationTokenRoute:
+    EventsRegistrationConfirmationTokenRoute,
+  EventsSurveyTokenRoute: EventsSurveyTokenRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

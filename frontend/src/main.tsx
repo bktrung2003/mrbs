@@ -7,6 +7,7 @@ import {
 import { createRouter, RouterProvider } from "@tanstack/react-router"
 import { StrictMode } from "react"
 import ReactDOM from "react-dom/client"
+import { registerSW } from "virtual:pwa-register"
 import { ApiError, OpenAPI } from "./client"
 import { ThemeProvider } from "./components/theme-provider"
 import { Toaster } from "./components/ui/sonner"
@@ -19,9 +20,19 @@ OpenAPI.TOKEN = async () => {
 }
 
 const handleApiError = (error: Error) => {
-  if (error instanceof ApiError && [401, 403].includes(error.status)) {
+  if (!(error instanceof ApiError)) return
+  if (error.status === 401) {
     localStorage.removeItem("access_token")
     window.location.href = "/login"
+    return
+  }
+  if (error.status === 403) {
+    const body = error.body as { detail?: string } | undefined
+    const detail = String(body?.detail ?? "")
+    if (detail.toLowerCase().includes("credential")) {
+      localStorage.removeItem("access_token")
+      window.location.href = "/login"
+    }
   }
 }
 const queryClient = new QueryClient({
@@ -39,6 +50,8 @@ declare module "@tanstack/react-router" {
     router: typeof router
   }
 }
+
+registerSW({ immediate: true })
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <StrictMode>

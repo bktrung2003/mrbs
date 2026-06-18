@@ -66,6 +66,7 @@ export type UserCreate = {
     email: string;
     is_active?: boolean;
     is_superuser?: boolean;
+    is_booking_approver?: boolean;
     full_name?: (string | null);
     password: string;
 };
@@ -74,6 +75,7 @@ export type UserPublic = {
     email: string;
     is_active?: boolean;
     is_superuser?: boolean;
+    is_booking_approver?: boolean;
     full_name?: (string | null);
     id: string;
     created_at?: (string | null);
@@ -94,6 +96,7 @@ export type UserUpdate = {
     email?: (string | null);
     is_active?: boolean;
     is_superuser?: boolean;
+    is_booking_approver?: boolean;
     full_name?: (string | null);
     password?: (string | null);
 };

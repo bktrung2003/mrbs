@@ -1,6 +1,14 @@
 .vscode/*
 !.vscode/extensions.json
 node_modules/
+.env
+frontend/.env
+.venv/
+**/__pycache__/
+*.py[cod]
+htmlcov/
+.coverage
+frontend/.tanstack/
 /test-results/
 /playwright-report/
 /blob-report/

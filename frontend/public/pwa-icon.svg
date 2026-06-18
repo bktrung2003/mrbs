@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Fusion MRBS">
+  <rect width="512" height="512" rx="96" fill="#D97706"/>
+  <rect x="96" y="128" width="320" height="256" rx="24" fill="#FEF3E8"/>
+  <rect x="144" y="176" width="80" height="64" rx="8" fill="#F59E42"/>
+  <rect x="248" y="176" width="120" height="64" rx="8" fill="#FBC081"/>
+  <rect x="144" y="264" width="224" height="16" rx="8" fill="#F59E42" opacity="0.85"/>
+  <rect x="144" y="296" width="168" height="16" rx="8" fill="#FBC081"/>
+  <circle cx="400" cy="160" r="28" fill="#FFFFFF"/>
+  <path d="M388 160h24M400 148v24" stroke="#D97706" stroke-width="6" stroke-linecap="round"/>
+</svg>

@@ -42,6 +42,7 @@ const formSchema = z
       .or(z.literal("")),
     confirm_password: z.string().optional(),
     is_superuser: z.boolean().optional(),
+    is_booking_approver: z.boolean().optional(),
     is_active: z.boolean().optional(),
   })
   .refine((data) => !data.password || data.password === data.confirm_password, {
@@ -69,6 +70,7 @@ const EditUser = ({ user, onSuccess }: EditUserProps) => {
       email: user.email,
       full_name: user.full_name ?? undefined,
       is_superuser: user.is_superuser,
+      is_booking_approver: user.is_booking_approver ?? false,
       is_active: user.is_active,
     },
   })
@@ -194,10 +196,34 @@ const EditUser = ({ user, onSuccess }: EditUserProps) => {
                     <FormControl>
                       <Checkbox
                         checked={field.value}
+                        onCheckedChange={(checked) => {
+                          field.onChange(checked)
+                          if (checked) form.setValue("is_booking_approver", false)
+                        }}
+                      />
+                    </FormControl>
+                    <FormLabel className="font-normal">
+                      IT Admin (full system access)
+                    </FormLabel>
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="is_booking_approver"
+                render={({ field }) => (
+                  <FormItem className="flex items-center gap-3 space-y-0">
+                    <FormControl>
+                      <Checkbox
+                        checked={field.value}
+                        disabled={form.watch("is_superuser")}
                         onCheckedChange={field.onChange}
                       />
                     </FormControl>
-                    <FormLabel className="font-normal">Is superuser?</FormLabel>
+                    <FormLabel className="font-normal">
+                      HR Admin (approve employee bookings)
+                    </FormLabel>
                   </FormItem>
                 )}
               />

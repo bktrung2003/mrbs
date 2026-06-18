@@ -1,0 +1,42 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+</head>
+<body style="margin:0;padding:0;background:#fafbfc;font-family:Arial,Helvetica,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#fafbfc;padding:24px 12px;">
+    <tr>
+      <td align="center">
+        <table width="600" cellpadding="0" cellspacing="0" style="max-width:600px;background:#fff;border-radius:8px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.08);">
+          <tr>
+            <td style="background:#D97706;padding:20px 24px;">
+              <div style="color:#fff;font-size:18px;font-weight:600;">{{ project_name }}</div>
+              <div style="color:#FEF3E8;font-size:13px;margin-top:4px;">Booking pending approval</div>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:24px;color:#334155;font-size:15px;line-height:1.5;">
+              <p style="margin:0 0 16px;">A new meeting room booking is waiting for HR/IT review.</p>
+              <table width="100%" cellpadding="0" cellspacing="0" style="background:#FEF3E8;border-radius:6px;padding:16px;">
+                <tr><td style="padding:16px;">
+                  <div style="font-size:17px;font-weight:600;color:#92400E;">{{ title }}</div>
+                  <div style="margin-top:8px;color:#57534E;">{{ room_name }}{% if area_name %} · {{ area_name }}{% endif %}</div>
+                  <div style="margin-top:8px;color:#57534E;">{{ start_label }} – {{ end_label }}</div>
+                  <div style="margin-top:8px;color:#57534E;">Requested by {{ creator_name }} ({{ creator_email }})</div>
+                  {% if occurrence_count > 1 %}
+                  <div style="margin-top:8px;color:#B45309;font-size:13px;">Includes {{ occurrence_count }} occurrences in this series.</div>
+                  {% endif %}
+                </td></tr>
+              </table>
+              <p style="margin:24px 0 0;text-align:center;">
+                <a href="{{ admin_link }}" style="display:inline-block;background:#D97706;color:#fff;text-decoration:none;padding:12px 24px;border-radius:6px;font-weight:600;">Review in Admin</a>
+              </p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>

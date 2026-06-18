@@ -43,6 +43,7 @@ const formSchema = z
       .string()
       .min(1, { message: "Please confirm your password" }),
     is_superuser: z.boolean(),
+    is_booking_approver: z.boolean(),
     is_active: z.boolean(),
   })
   .refine((data) => data.password === data.confirm_password, {
@@ -67,6 +68,7 @@ const AddUser = () => {
       password: "",
       confirm_password: "",
       is_superuser: false,
+      is_booking_approver: false,
       is_active: false,
     },
   })
@@ -193,10 +195,34 @@ const AddUser = () => {
                     <FormControl>
                       <Checkbox
                         checked={field.value}
+                        onCheckedChange={(checked) => {
+                          field.onChange(checked)
+                          if (checked) form.setValue("is_booking_approver", false)
+                        }}
+                      />
+                    </FormControl>
+                    <FormLabel className="font-normal">
+                      IT Admin (full system access)
+                    </FormLabel>
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="is_booking_approver"
+                render={({ field }) => (
+                  <FormItem className="flex items-center gap-3 space-y-0">
+                    <FormControl>
+                      <Checkbox
+                        checked={field.value}
+                        disabled={form.watch("is_superuser")}
                         onCheckedChange={field.onChange}
                       />
                     </FormControl>
-                    <FormLabel className="font-normal">Is superuser?</FormLabel>
+                    <FormLabel className="font-normal">
+                      HR Admin (approve employee bookings)
+                    </FormLabel>
                   </FormItem>
                 )}
               />
