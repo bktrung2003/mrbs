@@ -31,6 +31,8 @@ from app.models import (
 from app.services.registration import (
     apply_survey_submission,
     can_submit_feedback,
+    check_in_contact_conflict_message,
+    find_active_registration_by_phone,
     has_survey_submitted,
     count_confirmed_registrations,
     ensure_public_event_access,
@@ -192,6 +194,19 @@ def register_for_public_event(
                 "confirmation_token": existing.confirmation_token,
             },
         )
+    if body.attendee_phone and body.attendee_phone.strip():
+        existing_phone = find_active_registration_by_phone(
+            session, booking.id, body.attendee_phone
+        )
+        if existing_phone:
+            raise HTTPException(
+                status_code=409,
+                detail={
+                    "code": "already_registered",
+                    "message": "This phone number is already registered for this event.",
+                    "confirmation_token": existing_phone.confirmation_token,
+                },
+            )
     registration = BookingRegistration.model_validate(
         body,
         update={
@@ -243,6 +258,9 @@ def check_in_event_by_email(
             confirmation_token=registration.confirmation_token,
             already_checked_in=True,
         )
+    conflict = check_in_contact_conflict_message(session, registration)
+    if conflict:
+        raise HTTPException(status_code=409, detail=conflict)
     mark_attendance(registration, True, via="self")
     session.add(registration)
     session.commit()
@@ -281,6 +299,11 @@ def submit_public_event_survey(
             raise HTTPException(
                 status_code=400,
                 detail="You have already submitted a survey for this event.",
+            )
+        if registration.attended is not True:
+            raise HTTPException(
+                status_code=400,
+                detail="You must check in before submitting the survey.",
             )
         raise HTTPException(
             status_code=400,
@@ -349,6 +372,9 @@ def check_in_public_registration(
         )
     if registration.attended is True:
         return _to_public_registration_detail(session, registration, booking)
+    conflict = check_in_contact_conflict_message(session, registration)
+    if conflict:
+        raise HTTPException(status_code=409, detail=conflict)
     mark_attendance(registration, True, via="self")
     session.add(registration)
     session.commit()
@@ -374,9 +400,14 @@ def submit_public_registration_feedback(
     if not booking:
         raise HTTPException(status_code=404, detail="Event not found")
     if not can_submit_feedback(registration, booking):
+        if registration.attended is not True:
+            raise HTTPException(
+                status_code=400,
+                detail="You must check in before submitting the survey.",
+            )
         raise HTTPException(
             status_code=400,
-            detail="Survey is only available after the event for registered attendees",
+            detail="Survey is only available after the event for checked-in attendees",
         )
     apply_survey_submission(registration, body)
     session.add(registration)

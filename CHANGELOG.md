@@ -2,6 +2,12 @@
 
 Cập nhật tính năng dành cho người dùng MRBS. Mỗi phiên bản tương ứng một lần deploy production.
 
+## 1.0.1 — 16/06/2026
+
+- **Lịch mobile (khách)** — xem schedule public giống desktop: lưới ngày, tuần, tháng; đặt phòng cần đăng nhập
+- **Sự kiện — khảo sát** — chỉ học viên đã check-in mới làm khảo sát sau sự kiện
+- **Sự kiện — check-in** — không trùng email hoặc số điện thoại với người đã check-in; đăng ký không trùng SĐT
+
 ## 1.0.0 — 16/06/2026
 
 - **Lịch phòng công khai** — xem lịch đã duyệt không cần đăng nhập; bấm đặt phòng sẽ chuyển sang trang đăng nhập

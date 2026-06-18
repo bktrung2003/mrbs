@@ -43,6 +43,7 @@ from app.services.booking import has_booking_conflict
 from app.services.registration import (
     ensure_public_event_access,
     find_active_registration,
+    find_active_registration_by_phone,
     is_registration_open,
     mark_attendance,
     normalize_registration_email,
@@ -823,11 +824,28 @@ def register_current_user(
                 "confirmation_token": existing.confirmation_token,
             },
         )
+    phone = (
+        body.attendee_phone.strip()
+        if body and body.attendee_phone and body.attendee_phone.strip()
+        else None
+    )
+    if phone:
+        existing_phone = find_active_registration_by_phone(session, booking.id, phone)
+        if existing_phone:
+            raise HTTPException(
+                status_code=409,
+                detail={
+                    "code": "already_registered",
+                    "message": "This phone number is already registered for this event.",
+                    "confirmation_token": existing_phone.confirmation_token,
+                },
+            )
     registration = BookingRegistration(
         booking_id=booking.id,
         user_id=current_user.id,
         attendee_name=name,
         attendee_email=email,
+        attendee_phone=phone,
         department=body.department if body else None,
         status=RegistrationStatus.CONFIRMED,
     )

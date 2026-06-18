@@ -72,7 +72,12 @@ function PublicEventPage() {
         const msg =
           typeof detail === "string"
             ? detail
-            : "This event is full or this email is already registered."
+            : detail && typeof detail === "object" && "message" in detail
+              ? String(detail.message)
+              : "This event is full or this email is already registered."
+        if (detail && typeof detail === "object" && "confirmation_token" in detail) {
+          setDuplicateToken(String(detail.confirmation_token))
+        }
         showErrorToast(msg)
         return
       }
@@ -233,8 +238,8 @@ function PublicEventPage() {
                   Registration details
                 </h2>
                 <p className="mt-1 text-sm text-slate-600">
-                  Enter your name and company email to reserve a spot. Each email can
-                  only register once.
+                  Enter your name and company email to reserve a spot. Each email and
+                  phone number can only register once.
                 </p>
               </div>
 
@@ -431,8 +436,8 @@ function PublicEventPage() {
               <div className="min-w-0 flex-1">
                 <h2 className="text-base font-semibold text-slate-900">Post-event survey</h2>
                 <p className="mt-1 text-sm text-slate-600">
-                  Share your feedback about this session. Use the email or phone from your
-                  registration.
+                  Share your feedback about this session. You must check in first — use
+                  the email or phone from your registration.
                 </p>
                 <Button asChild className={`mt-3 w-full sm:w-auto ${fusionBtnPrimary}`}>
                   <Link to="/events/survey/$token" params={{ token: event.public_slug ?? token }}>

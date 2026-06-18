@@ -121,6 +121,14 @@ function RegistrationStatusPage() {
   const cancelled = registration.status === "cancelled"
   const checkedIn = registration.attended === true
   const surveyDone = hasSurveySubmitted(registration)
+  const eventEnded =
+    Date.now() > new Date(registration.event_end_time).getTime()
+  const surveyNeedsCheckIn =
+    !cancelled &&
+    !surveyDone &&
+    registration.enable_post_event_survey &&
+    eventEnded &&
+    !checkedIn
 
   return (
     <div className="flex min-h-svh items-center justify-center bg-[#FAFAFA] px-4 py-8 text-slate-900">
@@ -179,6 +187,15 @@ function RegistrationStatusPage() {
           >
             Check in to event
           </Button>
+        ) : null}
+
+        {surveyNeedsCheckIn ? (
+          <div className="mt-5 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+            <p className="font-medium">Check-in required for survey</p>
+            <p className="mt-1">
+              Please check in to this event before submitting the post-event survey.
+            </p>
+          </div>
         ) : null}
 
         {!cancelled && surveyDone ? (

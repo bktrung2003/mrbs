@@ -5,7 +5,7 @@ Hệ thống đặt phòng họp và quản lý sự kiện cho **Fusion Hotel G
 | | |
 |---|---|
 | **Production** | https://mrbs2.fusionhotelgroup.com |
-| **Phiên bản** | 1.0.0 — xem [CHANGELOG.md](./CHANGELOG.md) |
+| **Phiên bản** | 1.0.1 — xem [CHANGELOG.md](./CHANGELOG.md) |
 | **Repo** | https://github.com/bktrung2003/mrbs |
 
 ## Tính năng chính

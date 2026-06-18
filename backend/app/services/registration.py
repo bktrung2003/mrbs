@@ -198,6 +198,25 @@ def find_active_registration(
     ).first()
 
 
+def find_active_registration_by_phone(
+    session: Session, booking_id: uuid.UUID, phone: str
+) -> BookingRegistration | None:
+    digits = normalize_phone(phone)
+    if not digits:
+        return None
+    registrations = session.exec(
+        select(BookingRegistration).where(
+            BookingRegistration.booking_id == booking_id,
+            BookingRegistration.status == RegistrationStatus.CONFIRMED,
+            BookingRegistration.attendee_phone.is_not(None),
+        )
+    ).all()
+    for reg in registrations:
+        if reg.attendee_phone and normalize_phone(reg.attendee_phone) == digits:
+            return reg
+    return None
+
+
 def find_active_registration_by_contact(
     session: Session, booking_id: uuid.UUID, contact: str
 ) -> BookingRegistration | None:
@@ -206,18 +225,54 @@ def find_active_registration_by_contact(
         return None
     if "@" in raw:
         return find_active_registration(session, booking_id, raw)
-    digits = normalize_phone(raw)
-    if digits:
-        registrations = session.exec(
-            select(BookingRegistration).where(
-                BookingRegistration.booking_id == booking_id,
-                BookingRegistration.status == RegistrationStatus.CONFIRMED,
-                BookingRegistration.attendee_phone.is_not(None),
-            )
-        ).all()
-        for reg in registrations:
-            if reg.attendee_phone and normalize_phone(reg.attendee_phone) == digits:
+    return find_active_registration_by_phone(session, booking_id, raw)
+
+
+def find_checked_in_contact_conflict(
+    session: Session,
+    booking_id: uuid.UUID,
+    *,
+    email: str,
+    phone: str | None,
+    exclude_registration_id: uuid.UUID,
+) -> BookingRegistration | None:
+    """Another attendee already checked in with the same email or phone."""
+    checked_in = session.exec(
+        select(BookingRegistration).where(
+            BookingRegistration.booking_id == booking_id,
+            BookingRegistration.status == RegistrationStatus.CONFIRMED,
+            BookingRegistration.attended.is_(True),
+            BookingRegistration.id != exclude_registration_id,
+        )
+    ).all()
+    norm_email = normalize_registration_email(email)
+    norm_phone = normalize_phone(phone) if phone and phone.strip() else ""
+    for reg in checked_in:
+        if normalize_registration_email(reg.attendee_email) == norm_email:
+            return reg
+        if norm_phone and reg.attendee_phone:
+            if normalize_phone(reg.attendee_phone) == norm_phone:
                 return reg
+    return None
+
+
+def check_in_contact_conflict_message(
+    session: Session, registration: BookingRegistration
+) -> str | None:
+    if registration.attended is True:
+        return None
+    conflict = find_checked_in_contact_conflict(
+        session,
+        registration.booking_id,
+        email=registration.attendee_email,
+        phone=registration.attendee_phone,
+        exclude_registration_id=registration.id,
+    )
+    if conflict:
+        return (
+            "This email or phone number has already been used for check-in "
+            "by another attendee."
+        )
     return None
 
 
@@ -356,6 +411,8 @@ def can_submit_feedback(
     if not booking.enable_post_event_survey:
         return False
     if registration.status != RegistrationStatus.CONFIRMED:
+        return False
+    if registration.attended is not True:
         return False
     if has_survey_submitted(registration):
         return False

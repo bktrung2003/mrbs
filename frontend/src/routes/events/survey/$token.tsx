@@ -176,7 +176,8 @@ function PublicEventSurveyPage() {
                 Your email or phone
               </Label>
               <p className="mt-0.5 text-xs text-slate-600">
-                Use the same contact details from your event registration.
+                Use the same contact details from your event registration. Check-in is
+                required before you can submit the survey.
               </p>
               <Input
                 id="survey-contact"
