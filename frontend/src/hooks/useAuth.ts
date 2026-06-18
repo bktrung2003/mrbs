@@ -46,9 +46,21 @@ const useAuth = () => {
   }
 
   const loginMutation = useMutation({
-    mutationFn: login,
-    onSuccess: () => {
-      navigate({ to: "/schedule" })
+    mutationFn: async ({
+      formData,
+      redirectTo,
+    }: {
+      formData: AccessToken
+      redirectTo?: string
+    }) => {
+      await login(formData)
+      return redirectTo
+    },
+    onSuccess: (redirectTo) => {
+      queryClient.invalidateQueries({ queryKey: ["currentUser"] })
+      const target =
+        redirectTo && redirectTo.startsWith("/") ? redirectTo : "/schedule"
+      navigate({ to: target })
     },
     onError: handleError.bind(showErrorToast),
   })

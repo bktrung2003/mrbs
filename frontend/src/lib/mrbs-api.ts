@@ -41,7 +41,7 @@ export type MrbsUser = {
 export type Booking = {
   id: string
   room_id: string
-  created_by_id: string
+  created_by_id?: string
   title: string
   start_time: string
   end_time: string
@@ -107,8 +107,8 @@ async function apiPatch<T>(path: string, body: unknown) {
   return data
 }
 
-async function apiGetPublic<T>(path: string) {
-  const { data } = await axios.get<T>(`${OpenAPI.BASE}${path}`)
+async function apiGetPublic<T>(path: string, params?: Record<string, string>) {
+  const { data } = await axios.get<T>(`${OpenAPI.BASE}${path}`, { params })
   return data
 }
 
@@ -269,6 +269,29 @@ export function fetchBookingsRange(
     end_date: endDate,
     for_schedule: String(forSchedule),
   })
+}
+
+export function fetchPublicScheduleRooms() {
+  return apiGetPublic<{ data: Room[]; count: number }>(
+    "/api/v1/public/schedule/rooms",
+  )
+}
+
+export function fetchPublicScheduleBookings(day: string) {
+  return apiGetPublic<{ data: Booking[]; count: number }>(
+    "/api/v1/public/schedule/bookings",
+    { day },
+  )
+}
+
+export function fetchPublicScheduleBookingsRange(
+  startDate: string,
+  endDate: string,
+) {
+  return apiGetPublic<{ data: Booking[]; count: number }>(
+    "/api/v1/public/schedule/bookings",
+    { start_date: startDate, end_date: endDate },
+  )
 }
 
 export function fetchBookingReport(filters: BookingReportFilters = {}) {

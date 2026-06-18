@@ -249,6 +249,39 @@ class RoomsPublic(SQLModel):
     count: int
 
 
+class ScheduleRoomPublic(SQLModel):
+    id: uuid.UUID
+    name: str
+    capacity: int
+    area_id: uuid.UUID
+    sort_order: int
+    is_active: bool = True
+
+
+class ScheduleRoomsPublic(SQLModel):
+    data: list[ScheduleRoomPublic]
+    count: int
+
+
+class ScheduleBookingPublic(SQLModel):
+    id: uuid.UUID
+    room_id: uuid.UUID
+    title: str
+    start_time: datetime
+    end_time: datetime
+    booking_type: str
+    confirmation_status: str
+    is_all_day: bool = False
+    approval_status: str = "approved"
+    room_name: str | None = None
+    area_name: str | None = None
+
+
+class ScheduleBookingsPublic(SQLModel):
+    data: list[ScheduleBookingPublic]
+    count: int
+
+
 class BookingBase(SQLModel):
     title: str = Field(min_length=1, max_length=255)
     start_time: datetime

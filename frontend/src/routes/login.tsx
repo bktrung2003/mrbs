@@ -30,10 +30,15 @@ const formSchema = z.object({
     .min(8, { message: "Password must be at least 8 characters" }),
 }) satisfies z.ZodType<AccessToken>
 
+const loginSearchSchema = z.object({
+  redirect: z.string().optional(),
+})
+
 type FormData = z.infer<typeof formSchema>
 
 export const Route = createFileRoute("/login")({
   component: Login,
+  validateSearch: (search) => loginSearchSchema.parse(search),
   beforeLoad: async () => {
     if (isLoggedIn()) {
       throw redirect({ to: "/schedule" })
@@ -46,6 +51,7 @@ export const Route = createFileRoute("/login")({
 
 function Login() {
   const { loginMutation } = useAuth()
+  const { redirect: redirectTo } = Route.useSearch()
   const { data: brandingData } = useQuery({
     queryKey: ["branding"],
     queryFn: fetchBranding,
@@ -65,7 +71,7 @@ function Login() {
 
   const onSubmit = (data: FormData) => {
     if (loginMutation.isPending) return
-    loginMutation.mutate(data)
+    loginMutation.mutate({ formData: data, redirectTo })
   }
 
   return (

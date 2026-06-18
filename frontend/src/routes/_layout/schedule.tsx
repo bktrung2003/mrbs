@@ -32,7 +32,7 @@ import {
   toDateInputValue,
 } from "@/components/mrbs/schedule-utils"
 import { Button } from "@/components/ui/button"
-import useAuth from "@/hooks/useAuth"
+import useAuth, { isLoggedIn } from "@/hooks/useAuth"
 import useCustomToast from "@/hooks/useCustomToast"
 import { useIsMobile } from "@/hooks/useMediaQuery"
 import type { Booking } from "@/lib/mrbs-api"
@@ -42,6 +42,9 @@ import {
   fetchAreas,
   fetchBookings,
   fetchBookingsRange,
+  fetchPublicScheduleBookings,
+  fetchPublicScheduleBookingsRange,
+  fetchPublicScheduleRooms,
   fetchRooms,
   updateBooking,
 } from "@/lib/mrbs-api"
@@ -112,6 +115,7 @@ function bookingToInitial(booking: Booking) {
 
 function SchedulePage() {
   const { user } = useAuth()
+  const guestMode = !isLoggedIn()
   const [selectedDate, setSelectedDate] = useState(new Date())
   const [view, setView] = useState<ScheduleView>("day")
   const [dialogOpen, setDialogOpen] = useState(false)
@@ -154,6 +158,9 @@ function SchedulePage() {
   }, [selectedDate, view])
 
   const toolbarHint = useMemo(() => {
+    if (guestMode) {
+      return "View-only schedule — sign in to book a room"
+    }
     if (isMobile && view === "day") {
       return "Green = free · tap a slot to book a room"
     }
@@ -164,28 +171,46 @@ function SchedulePage() {
       return "Rows are rooms · columns are days this week — fits on one screen"
     }
     return "Rows are rooms · columns are days — click Available to book"
-  }, [view, isMobile])
+  }, [view, isMobile, guestMode])
+
+  const requireLogin = useCallback(() => {
+    if (!guestMode) return true
+    void navigate({
+      to: "/login",
+      search: { redirect: "/schedule" },
+    })
+    return false
+  }, [guestMode, navigate])
 
   const { data: areasData } = useQuery({
     queryKey: ["areas"],
     queryFn: fetchAreas,
+    enabled: !guestMode,
   })
   const { data: roomsData, isLoading: roomsLoading } = useQuery({
-    queryKey: ["rooms"],
-    queryFn: () => fetchRooms(),
+    queryKey: ["rooms", guestMode ? "public" : "auth"],
+    queryFn: () => (guestMode ? fetchPublicScheduleRooms() : fetchRooms()),
   })
   const { data: bookingsData, isLoading: bookingsLoading } = useQuery({
-    queryKey: ["bookings", view, range.key],
+    queryKey: ["bookings", guestMode ? "public" : "auth", view, range.key],
     queryFn: () =>
-      view === "day"
-        ? fetchBookings(range.start)
-        : fetchBookingsRange(range.start, range.end),
+      guestMode
+        ? view === "day"
+          ? fetchPublicScheduleBookings(range.start)
+          : fetchPublicScheduleBookingsRange(range.start, range.end)
+        : view === "day"
+          ? fetchBookings(range.start)
+          : fetchBookingsRange(range.start, range.end),
   })
 
   const selectedDayKey = toDateInputValue(selectedDate)
   const { data: selectedDayAllBookings } = useQuery({
-    queryKey: ["bookings", "day-stats", selectedDayKey],
-    queryFn: () => fetchBookings(selectedDayKey, false),
+    queryKey: ["bookings", guestMode ? "public" : "auth", "day-stats", selectedDayKey],
+    queryFn: () =>
+      guestMode
+        ? fetchPublicScheduleBookings(selectedDayKey)
+        : fetchBookings(selectedDayKey, false),
+    enabled: !guestMode,
   })
   const selectedDayStats = dayBookingStats(selectedDayAllBookings?.data ?? [])
   const miniMonthStart = toDateInputValue(
@@ -195,8 +220,11 @@ function SchedulePage() {
     endOfMonth(new Date(selectedDate.getFullYear(), selectedDate.getMonth(), 1)),
   )
   const { data: miniMonthBookings } = useQuery({
-    queryKey: ["bookings", "mini-month", miniMonthStart],
-    queryFn: () => fetchBookingsRange(miniMonthStart, miniMonthEnd),
+    queryKey: ["bookings", guestMode ? "public" : "auth", "mini-month", miniMonthStart],
+    queryFn: () =>
+      guestMode
+        ? fetchPublicScheduleBookingsRange(miniMonthStart, miniMonthEnd)
+        : fetchBookingsRange(miniMonthStart, miniMonthEnd),
     enabled: view !== "month",
   })
 
@@ -261,12 +289,14 @@ function SchedulePage() {
   }
 
   const openNewBooking = () => {
+    if (!requireLogin()) return
     setEditing(null)
     setDraft(null)
     setDialogOpen(true)
   }
 
   const openNewEvent = () => {
+    if (!requireLogin()) return
     const dateStr = toDateInputValue(selectedDate)
     setEditing(null)
     setDraft({
@@ -281,14 +311,19 @@ function SchedulePage() {
 
   useEffect(() => {
     if (newBookingKind !== "event") return
+    if (!requireLogin()) {
+      void navigate({ search: { new: undefined }, replace: true })
+      return
+    }
     openNewEvent()
     void navigate({ search: { new: undefined }, replace: true })
-  }, [newBookingKind, navigate, selectedDate])
+  }, [newBookingKind, navigate, selectedDate, requireLogin])
 
   const openNew = (
     startLabel: string,
     options?: { roomId?: string; date?: Date },
   ) => {
+    if (!requireLogin()) return
     const targetDate = options?.date ?? selectedDate
     const dateStr = toDateInputValue(targetDate)
     const start = labelToTime(startLabel)
@@ -307,6 +342,7 @@ function SchedulePage() {
   }
 
   const openBooking = (booking: Booking) => {
+    if (!requireLogin()) return
     setEditing(booking)
     setDraft(null)
     setDialogOpen(true)
@@ -319,9 +355,19 @@ function SchedulePage() {
 
   const canEditBooking = useCallback(
     (booking: Booking) =>
-      Boolean(user?.is_superuser) || booking.created_by_id === user?.id,
+      Boolean(
+        user &&
+          (user.is_superuser || booking.created_by_id === user.id),
+      ),
     [user],
   )
+
+  const pageShellClass = guestMode
+    ? "flex h-screen flex-col overflow-hidden"
+    : mrbsPageShellClass
+  const mobileFabBottom = guestMode
+    ? "calc(1rem + env(safe-area-inset-bottom))"
+    : "calc(5.5rem + env(safe-area-inset-bottom))"
 
   const handleReschedule = async (
     booking: Booking,
@@ -346,7 +392,7 @@ function SchedulePage() {
   }
 
   return (
-    <div className={`${mrbsPageShellClass} ${theme.pageBg}`}>
+    <div className={`${pageShellClass} ${theme.pageBg}`}>
       <MrbsHeader />
 
       <div className="flex min-h-0 w-full flex-1 flex-col gap-3 px-3 py-3 pb-[max(1rem,env(safe-area-inset-bottom))] lg:px-4 lg:py-4">
@@ -497,7 +543,7 @@ function SchedulePage() {
               Current time
             </span>
           ) : null}
-          {view === "day" ? (
+          {!guestMode && view === "day" ? (
             <span className="hidden items-center gap-2 rounded-full border border-stone-200 bg-white px-3 py-1 text-xs text-[#5C5C5C] md:inline-flex">
               <span className="h-3 w-3 cursor-grab rounded border border-dashed border-[#F59E42]/60 bg-[#FEF3E8]" />
               Drag to move · resize from bottom edge
@@ -510,7 +556,7 @@ function SchedulePage() {
         type="button"
         aria-label="New booking"
         className={`fixed z-40 h-14 w-14 rounded-full shadow-lg md:hidden ${fusionBtnPrimary}`}
-        style={{ bottom: "calc(5.5rem + env(safe-area-inset-bottom))", right: "1rem" }}
+        style={{ bottom: mobileFabBottom, right: "1rem" }}
         onClick={openNewBooking}
       >
         <Plus className="h-6 w-6" />
