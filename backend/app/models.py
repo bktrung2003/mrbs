@@ -3,7 +3,7 @@ import uuid
 from datetime import date, datetime, timezone
 
 from pydantic import EmailStr
-from sqlalchemy import DateTime
+from sqlalchemy import Column, DateTime, LargeBinary
 from sqlmodel import Field, Relationship, SQLModel
 
 
@@ -583,6 +583,13 @@ class BrandingSettingsUpdate(SQLModel):
 
 class BrandingSettings(BrandingSettingsBase, table=True):
     id: int = Field(default=1, primary_key=True)
+    logo_color_data: bytes | None = Field(
+        default=None, sa_column=Column(LargeBinary, nullable=True)
+    )
+    logo_white_data: bytes | None = Field(
+        default=None, sa_column=Column(LargeBinary, nullable=True)
+    )
+    logo_version: int = Field(default=0)
 
 
 class BrandingSettingsPublic(BrandingSettingsBase):

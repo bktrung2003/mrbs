@@ -63,6 +63,10 @@ export default defineConfig({
         globPatterns: ["**/*.{js,css,html,ico,png,svg,woff2}"],
         runtimeCaching: [
           {
+            urlPattern: /\/api\/v1\/branding\/files\//,
+            handler: "NetworkOnly",
+          },
+          {
             urlPattern: /\/api\/v1\/branding\/?$/,
             handler: "NetworkFirst",
             options: {

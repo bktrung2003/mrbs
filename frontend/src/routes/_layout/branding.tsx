@@ -3,6 +3,7 @@ import { createFileRoute, redirect } from "@tanstack/react-router"
 import { useEffect, useState } from "react"
 
 import { MrbsHeader } from "@/components/mrbs/MrbsHeader"
+import { BrandingLogo } from "@/components/mrbs/BrandingLogo"
 import { fusionBtnPrimary } from "@/components/mrbs/fusion-brand"
 import { scheduleTheme as theme } from "@/components/mrbs/schedule-theme"
 import { Button } from "@/components/ui/button"
@@ -163,10 +164,11 @@ function BrandingPage() {
                   Header preview
                 </p>
                 <div className="flex items-center gap-3">
-                  <img
+                  <BrandingLogo
                     src={branding.logo_white_url}
                     alt=""
-                    className="h-8 w-auto object-contain"
+                    variant="white"
+                    className="h-8 w-auto"
                   />
                   <div>
                     <div className="text-sm font-semibold text-white">
@@ -218,10 +220,11 @@ function LogoUploadCard({
       <div
         className={`mb-3 flex h-20 items-center justify-center rounded-lg p-2 ${previewClassName}`}
       >
-        <img
+        <BrandingLogo
           src={`${previewUrl}?v=${previewVersion}`}
           alt=""
-          className="max-h-full max-w-full object-contain"
+          variant={title.toLowerCase().includes("white") ? "white" : "color"}
+          className="max-h-full max-w-full"
         />
       </div>
       <label className="block">

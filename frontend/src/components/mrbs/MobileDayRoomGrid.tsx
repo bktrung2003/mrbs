@@ -1,6 +1,10 @@
-import { useState } from "react"
-import { ChevronDown, Clock, Users } from "lucide-react"
+import { CalendarX2, Clock, Users } from "lucide-react"
 
+import {
+  approvalTone,
+  StatusBadge,
+} from "@/components/mrbs/mrbs-filter-ui"
+import { approvalLabel } from "@/components/mrbs/report-utils"
 import { scheduleTheme as theme } from "@/components/mrbs/schedule-theme"
 import {
   bookingsForRoomOnDay,
@@ -8,6 +12,7 @@ import {
   countRoomsAvailableNow,
   formatDateTimeLabel,
   formatSlotRange,
+  isBookingActive,
   isSameDay,
   minutesFromMidnight,
   minutesToSlotLabel,
@@ -33,17 +38,19 @@ const SCHEDULE_SPAN = SCHEDULE_END - SCHEDULE_START
 function segmentStyle(startMin: number, endMin: number) {
   const left = ((startMin - SCHEDULE_START) / SCHEDULE_SPAN) * 100
   const width = ((endMin - startMin) / SCHEDULE_SPAN) * 100
-  return { left: `${left}%`, width: `${Math.max(width, 1.5)}%` }
+  return { left: `${left}%`, width: `${Math.max(width, 2)}%` }
 }
 
 function RoomTimeline({
   freeSlots,
   roomBookings,
   onFreeSlotClick,
+  onBookingClick,
 }: {
   freeSlots: ScheduleTimeRange[]
   roomBookings: Booking[]
   onFreeSlotClick: (startMin: number) => void
+  onBookingClick: (booking: Booking) => void
 }) {
   const occupied = roomBookings
     .map((b) => ({
@@ -59,40 +66,121 @@ function RoomTimeline({
         <span>{minutesToSlotLabel(SCHEDULE_START)}</span>
         <span>{minutesToSlotLabel(SCHEDULE_END)}</span>
       </div>
-      <div className="relative h-7 overflow-hidden rounded-lg bg-emerald-50 ring-1 ring-emerald-100">
+      <div className="relative h-8 overflow-hidden rounded-lg bg-emerald-50 ring-1 ring-emerald-100">
         {freeSlots.map((slot) => (
           <button
             key={`${slot.startMin}-${slot.endMin}`}
             type="button"
-            className="absolute inset-y-0 bg-emerald-100/80 transition-colors active:bg-emerald-200"
+            className="absolute inset-y-0 bg-emerald-100/90 transition-colors active:bg-emerald-200"
             style={segmentStyle(slot.startMin, slot.endMin)}
             aria-label={`Book ${formatSlotRange(slot.startMin, slot.endMin)}`}
             onClick={() => onFreeSlotClick(slot.startMin)}
           />
         ))}
-        {occupied.map(({ start, end, booking }) => (
-          <div
-            key={booking.id}
-            className={`absolute inset-y-0 ${
-              booking.booking_type === "external"
-                ? "bg-stone-300/90"
-                : "bg-[#F59E42]/85"
-            }`}
-            style={segmentStyle(start, end)}
-            title={booking.title}
-          />
-        ))}
+        {occupied.map(({ start, end, booking }) => {
+          const active = isBookingActive(booking.start_time, booking.end_time)
+          return (
+            <button
+              key={booking.id}
+              type="button"
+              className={`absolute inset-y-0 overflow-hidden px-0.5 text-left ${
+                booking.booking_type === "external"
+                  ? "bg-stone-400/90"
+                  : "bg-[#F59E42]/90"
+              } ${active ? "ring-2 ring-inset ring-white/80" : ""}`}
+              style={segmentStyle(start, end)}
+              title={booking.title}
+              onClick={() => onBookingClick(booking)}
+            >
+              <span className="block truncate px-0.5 text-[8px] leading-tight font-semibold text-white">
+                {booking.title}
+              </span>
+            </button>
+          )
+        })}
       </div>
       <div className="mt-1 flex justify-between text-[10px] text-slate-400">
         <span className="inline-flex items-center gap-1">
           <span className="h-2 w-2 rounded-sm bg-emerald-200 ring-1 ring-emerald-300" />
-          Free
+          Free · tap to book
         </span>
         <span className="inline-flex items-center gap-1">
-          <span className="h-2 w-2 rounded-sm bg-[#F59E42]/85" />
-          Booked
+          <span className="h-2 w-2 rounded-sm bg-[#F59E42]/90" />
+          Booked · tap for details
         </span>
       </div>
+    </div>
+  )
+}
+
+function RoomMeetingsList({
+  roomBookings,
+  onBookingClick,
+}: {
+  roomBookings: Booking[]
+  onBookingClick: (booking: Booking) => void
+}) {
+  if (roomBookings.length === 0) return null
+
+  return (
+    <div className="mt-3 space-y-2">
+      <p className="text-[10px] font-semibold tracking-wide text-slate-500 uppercase">
+        Today&apos;s events
+      </p>
+      <ul className="space-y-2">
+        {roomBookings.map((booking) => {
+          const active = isBookingActive(booking.start_time, booking.end_time)
+          const pending = booking.approval_status === "pending"
+          return (
+            <li key={booking.id}>
+              <button
+                type="button"
+                className={`flex w-full gap-2 rounded-xl border px-3 py-2.5 text-left active:bg-slate-50 ${
+                  active
+                    ? "border-[#FBC081] bg-[#FEF3E8]"
+                    : "border-slate-200 bg-slate-50/80"
+                }`}
+                onClick={() => onBookingClick(booking)}
+              >
+                <div
+                  className={`mt-1 h-10 w-1 shrink-0 rounded-full ${
+                    booking.booking_type === "external"
+                      ? "bg-stone-400"
+                      : "bg-[#F59E42]"
+                  }`}
+                />
+                <div className="min-w-0 flex-1">
+                  <div className="flex flex-wrap items-center gap-1.5">
+                    <p className="truncate font-medium text-slate-900">
+                      {booking.title}
+                    </p>
+                    {active ? (
+                      <span className="rounded-full bg-[#F59E42] px-2 py-0.5 text-[10px] font-bold text-white">
+                        NOW
+                      </span>
+                    ) : null}
+                    {pending ? (
+                      <StatusBadge tone={approvalTone(booking.approval_status)}>
+                        {approvalLabel(booking.approval_status)}
+                      </StatusBadge>
+                    ) : null}
+                  </div>
+                  <p className="mt-0.5 flex items-center gap-1 text-xs text-slate-600">
+                    <Clock className="h-3 w-3 shrink-0" />
+                    {formatDateTimeLabel(booking.start_time).split(", ").pop()} –{" "}
+                    {formatDateTimeLabel(booking.end_time).split(", ").pop()}
+                  </p>
+                  {booking.created_by_name ? (
+                    <p className="mt-0.5 truncate text-[11px] text-slate-500">
+                      {booking.created_by_name}
+                    </p>
+                  ) : null}
+                </div>
+              </button>
+            </li>
+          )
+        })}
+      </ul>
     </div>
   )
 }
@@ -110,17 +198,17 @@ function RoomCard({
   onSlotClick: (room: Room, timeLabel: string) => void
   onBookingClick: (booking: Booking) => void
 }) {
-  const [open, setOpen] = useState(false)
   const roomBookings = bookingsForRoomOnDay(room.id, bookings, selectedDate)
   const freeSlots = computeFreeSlots(roomBookings)
   const summary = roomAvailabilitySummary(freeSlots, selectedDate)
+  const fullyBooked = freeSlots.length === 0
 
   const toneClass =
     summary.tone === "free"
       ? "bg-emerald-50 text-emerald-800 ring-emerald-200"
       : summary.tone === "busy"
         ? "bg-amber-50 text-amber-800 ring-amber-200"
-        : "bg-stone-100 text-stone-600 ring-stone-200"
+        : "bg-red-50 text-red-800 ring-red-200"
 
   return (
     <article className={`${theme.card} p-4`}>
@@ -139,86 +227,53 @@ function RoomCard({
         </span>
       </div>
 
-      <RoomTimeline
-        freeSlots={freeSlots}
+      <RoomMeetingsList
         roomBookings={roomBookings}
-        onFreeSlotClick={(startMin) =>
-          onSlotClick(room, minutesToSlotLabel(startMin))
-        }
+        onBookingClick={onBookingClick}
       />
 
-      {freeSlots.length > 0 ? (
-        <div className="mt-3">
-          <p className="mb-1.5 text-[10px] font-semibold tracking-wide text-slate-400 uppercase">
-            Tap to book
-          </p>
-          <div className="flex flex-wrap gap-1.5">
-            {freeSlots.slice(0, 6).map((slot) => (
-              <button
-                key={`chip-${slot.startMin}`}
-                type="button"
-                className="rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-[11px] font-medium text-emerald-800 active:bg-emerald-100"
-                onClick={() => onSlotClick(room, minutesToSlotLabel(slot.startMin))}
-              >
-                {formatSlotRange(slot.startMin, slot.endMin)}
-              </button>
-            ))}
-            {freeSlots.length > 6 ? (
-              <span className="self-center text-[11px] text-slate-400">
-                +{freeSlots.length - 6} more
-              </span>
-            ) : null}
+      {fullyBooked ? (
+        <div className="mt-3 flex items-start gap-2 rounded-xl border border-red-200 bg-red-50 px-3 py-2.5 text-xs text-red-800">
+          <CalendarX2 className="mt-0.5 h-4 w-4 shrink-0" />
+          <div>
+            <p className="font-semibold">Fully booked today</p>
+            <p className="mt-0.5 text-red-700/90">
+              No open slots in this room. Pick another room or another day.
+            </p>
           </div>
         </div>
-      ) : null}
+      ) : (
+        <>
+          <RoomTimeline
+            freeSlots={freeSlots}
+            roomBookings={roomBookings}
+            onFreeSlotClick={(startMin) =>
+              onSlotClick(room, minutesToSlotLabel(startMin))
+            }
+            onBookingClick={onBookingClick}
+          />
 
-      {roomBookings.length > 0 ? (
-        <div className="mt-3 border-t border-slate-100 pt-3">
-          <button
-            type="button"
-            className="flex w-full items-center justify-between text-left text-xs font-medium text-slate-600"
-            onClick={() => setOpen((v) => !v)}
-          >
-            <span>
-              {roomBookings.length} meeting{roomBookings.length > 1 ? "s" : ""} today
-            </span>
-            <ChevronDown
-              className={`h-4 w-4 transition-transform ${open ? "rotate-180" : ""}`}
-            />
-          </button>
-          {open ? (
-            <ul className="mt-2 space-y-1">
-              {roomBookings.map((booking) => (
-                <li key={booking.id}>
-                  <button
-                    type="button"
-                    className="flex w-full gap-2 rounded-lg px-2 py-2 text-left active:bg-slate-50"
-                    onClick={() => onBookingClick(booking)}
-                  >
-                    <div
-                      className={`mt-1 h-full w-1 shrink-0 rounded-full ${
-                        booking.booking_type === "external"
-                          ? theme.booking.external.bg
-                          : theme.booking.internal.bg
-                      }`}
-                    />
-                    <div className="min-w-0">
-                      <p className="truncate text-sm font-medium text-slate-800">
-                        {booking.title}
-                      </p>
-                      <p className="flex items-center gap-1 text-[11px] text-slate-500">
-                        <Clock className="h-3 w-3" />
-                        {formatDateTimeLabel(booking.start_time).split(", ").pop()} –{" "}
-                        {formatDateTimeLabel(booking.end_time).split(", ").pop()}
-                      </p>
-                    </div>
-                  </button>
-                </li>
+          <div className="mt-3">
+            <p className="mb-1.5 text-[10px] font-semibold tracking-wide text-slate-400 uppercase">
+              Open slots · tap to book
+            </p>
+            <div className="flex flex-wrap gap-1.5">
+              {freeSlots.map((slot) => (
+                <button
+                  key={`chip-${slot.startMin}`}
+                  type="button"
+                  className="rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-[11px] font-medium text-emerald-800 active:bg-emerald-100"
+                  onClick={() =>
+                    onSlotClick(room, minutesToSlotLabel(slot.startMin))
+                  }
+                >
+                  {formatSlotRange(slot.startMin, slot.endMin)}
+                </button>
               ))}
-            </ul>
-          ) : null}
-        </div>
-      ) : null}
+            </div>
+          </div>
+        </>
+      )}
     </article>
   )
 }
@@ -264,7 +319,7 @@ export function MobileDayRoomGrid({
         )}
         <span className="text-[#B45309]/90">
           {" "}
-          · Green = available · tap a slot to book
+          · Events listed per room · green = bookable
         </span>
       </div>
 

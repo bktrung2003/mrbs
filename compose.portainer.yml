@@ -116,8 +116,10 @@ services:
 
 volumes:
   mrbs_postgres_data:
+    name: mrbs_postgres_data
     driver: local
   mrbs_branding_data:
+    name: mrbs_branding_data
     driver: local
 
 networks:

@@ -6,6 +6,7 @@ import {
   fusionHeaderNavActive,
   fusionHeaderNavLink,
 } from "@/components/mrbs/fusion-brand"
+import { BrandingLogo } from "@/components/mrbs/BrandingLogo"
 import { NAV_ICONS, NAV_ITEMS } from "@/components/mrbs/nav-config"
 import {
   Sheet,
@@ -90,10 +91,11 @@ export function MrbsHeader() {
       >
         <div className="flex items-center justify-between gap-2 px-3 py-2.5 md:px-4 lg:px-6">
           <Link to="/schedule" className="flex min-w-0 items-center gap-2 md:gap-3">
-            <img
+            <BrandingLogo
               src={branding.logo_white_url}
               alt={branding.company_name}
-              className="h-9 w-auto max-w-[120px] shrink-0 object-contain object-left md:h-10 md:max-w-[140px]"
+              variant="white"
+              className="h-9 w-auto max-w-[120px] shrink-0 object-left md:h-10 md:max-w-[140px]"
             />
             <div className="hidden min-w-0 border-l border-white/25 pl-3 sm:block">
               <div className="truncate text-sm font-semibold text-white">

@@ -5,6 +5,7 @@ import { useForm } from "react-hook-form"
 import { z } from "zod"
 
 import type { Body_login_login_access_token as AccessToken } from "@/client"
+import { BrandingLogo } from "@/components/mrbs/BrandingLogo"
 import { defaultBranding, fusionBtnPrimary } from "@/components/mrbs/fusion-brand"
 import { PwaInstallBanner } from "@/components/mrbs/PwaInstallBanner"
 import {
@@ -75,10 +76,11 @@ function Login() {
         className="relative hidden flex-col items-center justify-center gap-6 px-12 text-white lg:flex"
         style={{ backgroundColor: branding.header_color }}
       >
-        <img
+        <BrandingLogo
           src={branding.logo_white_url}
           alt={branding.company_name}
-          className="h-20 w-auto max-w-[220px] object-contain"
+          variant="white"
+          className="h-20 w-auto max-w-[220px]"
         />
         <div className="max-w-sm text-center">
           <h1 className="text-2xl font-bold tracking-tight">
@@ -91,10 +93,11 @@ function Login() {
       {/* Form panel */}
       <div className="flex flex-col items-center justify-center bg-[#FAFAFA] px-6 py-10">
         <div className="mb-8 flex flex-col items-center gap-3 lg:hidden">
-          <img
+          <BrandingLogo
             src={branding.logo_color_url}
             alt={branding.company_name}
-            className="h-14 w-auto max-w-[180px] object-contain"
+            variant="color"
+            className="h-14 w-auto max-w-[180px]"
           />
           <p className="text-center text-sm text-[#808080]">
             {branding.system_name}
