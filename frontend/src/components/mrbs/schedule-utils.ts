@@ -256,11 +256,11 @@ export function minutesToSlotLabel(minutes: number): string {
   return `${displayHour.toString().padStart(2, "0")}:${m.toString().padStart(2, "0")} ${period}`
 }
 
-export function bookingsForRoomOnDay(
+export function bookingsForRoomOnDay<T extends { room_id: string; start_time: string; end_time: string }>(
   roomId: string,
-  bookings: { room_id: string; start_time: string; end_time: string }[],
+  bookings: T[],
   day: Date,
-) {
+): T[] {
   return bookings
     .filter((b) => b.room_id === roomId)
     .filter((b) => isSameDay(new Date(b.start_time), day))
