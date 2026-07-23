@@ -21,7 +21,7 @@ import {
   durationLabel,
 } from "@/components/mrbs/report-utils"
 import { scheduleTheme as theme } from "@/components/mrbs/schedule-theme"
-import { formatDateTimeLabel, toDateInputValue } from "@/components/mrbs/schedule-utils"
+import { formatDateTimeLabel } from "@/components/mrbs/schedule-utils"
 import { fusionBtnPrimary } from "@/components/mrbs/fusion-brand"
 import { Button } from "@/components/ui/button"
 import {
@@ -67,20 +67,16 @@ export const Route = createFileRoute("/_layout/admin")({
   }),
 })
 
-const today = toDateInputValue(new Date())
-const monthStart = toDateInputValue(
-  new Date(new Date().getFullYear(), new Date().getMonth(), 1),
-)
-
 function buildFilters(
   state: BookingReportFilters & { area_id?: string; room_id?: string },
 ): BookingReportFilters {
   const next: BookingReportFilters = {
-    start_date: state.start_date,
-    end_date: state.end_date,
     created_by: state.created_by || undefined,
     title: state.title || undefined,
   }
+  // Date range is optional — pending queue should list everything by default
+  if (state.start_date) next.start_date = state.start_date
+  if (state.end_date) next.end_date = state.end_date
   if (state.area_id) next.area_id = state.area_id
   if (state.room_id) next.room_id = state.room_id
   if (state.approval_status) next.approval_status = state.approval_status
@@ -97,14 +93,12 @@ function AdminPage() {
   const [matchRoom, setMatchRoom] = useState("all")
   const [approvalStatus, setApprovalStatus] = useState("pending")
   const [confirmationStatus, setConfirmationStatus] = useState("all")
-  const [startDate, setStartDate] = useState(monthStart)
-  const [endDate, setEndDate] = useState(today)
+  const [startDate, setStartDate] = useState("")
+  const [endDate, setEndDate] = useState("")
   const [createdBy, setCreatedBy] = useState("")
 
   const [appliedFilters, setAppliedFilters] = useState<BookingReportFilters>(() =>
     buildFilters({
-      start_date: monthStart,
-      end_date: today,
       approval_status: "pending",
     }),
   )
@@ -183,10 +177,20 @@ function AdminPage() {
     const approval = overrides?.approval ?? approvalStatus
     if (overrides?.approval) setApprovalStatus(overrides.approval)
 
+    // Switching to Pending clears date filters so the full queue is visible
+    let from = startDate
+    let to = endDate
+    if (overrides?.approval === "pending") {
+      from = ""
+      to = ""
+      setStartDate("")
+      setEndDate("")
+    }
+
     setAppliedFilters(
       buildFilters({
-        start_date: startDate,
-        end_date: endDate,
+        start_date: from || undefined,
+        end_date: to || undefined,
         created_by: createdBy,
         area_id: matchArea !== "all" ? matchArea : undefined,
         room_id: matchRoom !== "all" ? matchRoom : undefined,
@@ -327,7 +331,9 @@ function AdminPage() {
                 <p className="text-xs text-slate-500">
                   {isLoading
                     ? "Loading…"
-                    : `${bookings.length} in queue · ${pendingCount} pending total`}
+                    : approvalStatus === "pending"
+                      ? `${bookings.length} awaiting approval · all dates`
+                      : `${bookings.length} shown · ${pendingCount} pending total`}
                 </p>
               </div>
             </div>
@@ -355,7 +361,7 @@ function AdminPage() {
           </div>
 
           <div className="grid grid-cols-2 gap-x-3 gap-y-2 sm:grid-cols-3 lg:grid-cols-5">
-            <FilterField label="From">
+            <FilterField label="From (optional)">
               <Input
                 type="date"
                 className="h-8 border-slate-200 text-xs"
@@ -363,7 +369,7 @@ function AdminPage() {
                 onChange={(e) => setStartDate(e.target.value)}
               />
             </FilterField>
-            <FilterField label="To">
+            <FilterField label="To (optional)">
               <Input
                 type="date"
                 className="h-8 border-slate-200 text-xs"

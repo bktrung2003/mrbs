@@ -2,6 +2,10 @@
 
 Cập nhật tính năng dành cho người dùng MRBS. Mỗi phiên bản tương ứng một lần deploy production.
 
+## 1.0.3 — 23/07/2026
+
+- **Admin duyệt booking** — tab Pending tự liệt kê tất cả yêu cầu chờ duyệt (mọi ngày), không cần Search theo khoảng ngày
+
 ## 1.0.2 — 16/06/2026
 
 - **Lịch mobile (khách)** — giao diện mobile đúng như app (danh sách phòng, timeline, sự kiện); chỉ xem, bấm đặt phòng → đăng nhập

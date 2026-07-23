@@ -1,5 +1,5 @@
 /** In-app release notes — keep in sync with CHANGELOG.md and VERSION. */
-export const APP_VERSION = "1.0.2"
+export const APP_VERSION = "1.0.3"
 
 export type ReleaseNote = {
   version: string
@@ -8,6 +8,13 @@ export type ReleaseNote = {
 }
 
 export const RELEASE_NOTES: ReleaseNote[] = [
+  {
+    version: "1.0.3",
+    date: "23/07/2026",
+    items: [
+      "Admin duyệt booking — tab Pending tự liệt kê tất cả yêu cầu chờ duyệt (mọi ngày), không cần Search theo khoảng ngày",
+    ],
+  },
   {
     version: "1.0.2",
     date: "16/06/2026",
