@@ -2,6 +2,10 @@
 
 Cập nhật tính năng dành cho người dùng MRBS. Mỗi phiên bản tương ứng một lần deploy production.
 
+## 1.0.4 — 24/07/2026
+
+- **Production** — không còn tạo booking demo (Thanh Ly, Linh Vân, Induction…); các bản seed còn sót trên live được hủy tự động khi redeploy
+
 ## 1.0.3 — 23/07/2026
 
 - **Admin duyệt booking** — tab Pending tự liệt kê tất cả yêu cầu chờ duyệt (mọi ngày), không cần Search theo khoảng ngày

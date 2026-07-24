@@ -6,6 +6,7 @@ from app.core.timezone_util import combine_hotel, hotel_today
 from app.models import (
     Area,
     Booking,
+    BookingStatus,
     BookingType,
     Room,
     User,
@@ -14,6 +15,7 @@ from app.models import (
 
 engine = create_engine(str(settings.SQLALCHEMY_DATABASE_URI))
 
+# Demo titles — local only. Never re-seed on live; clean up if found in production.
 SAMPLE_BOOKINGS = [
     ("Thanh Ly", "Glass Room (10)", 9, 0, 9, 30),
     ("Linh Vân", "Glass Room (10)", 11, 0, 11, 30),
@@ -26,6 +28,8 @@ SAMPLE_BOOKINGS = [
         30,
     ),
 ]
+
+SAMPLE_BOOKING_TITLES = {title for title, *_ in SAMPLE_BOOKINGS}
 
 
 def init_db(session: Session) -> None:
@@ -63,11 +67,20 @@ def init_db(session: Session) -> None:
             )
     session.commit()
 
+    if settings.ENVIRONMENT == "local":
+        _seed_sample_bookings(session, user)
+    else:
+        _remove_sample_bookings(session)
+
+
+def _seed_sample_bookings(session: Session, user: User) -> None:
     rooms_by_name = {room.name: room for room in session.exec(select(Room)).all()}
     today = hotel_today()
 
     for title, room_name, sh, sm, eh, em in SAMPLE_BOOKINGS:
-        room = rooms_by_name[room_name]
+        room = rooms_by_name.get(room_name)
+        if not room:
+            continue
         existing = session.exec(select(Booking).where(Booking.title == title)).first()
         start_time = combine_hotel(today, sh, sm)
         end_time = combine_hotel(today, eh, em)
@@ -75,6 +88,7 @@ def init_db(session: Session) -> None:
             existing.start_time = start_time
             existing.end_time = end_time
             existing.room_id = room.id
+            existing.status = BookingStatus.CONFIRMED
             session.add(existing)
         else:
             session.add(
@@ -88,3 +102,18 @@ def init_db(session: Session) -> None:
                 )
             )
     session.commit()
+
+
+def _remove_sample_bookings(session: Session) -> None:
+    """Cancel leftover demo bookings so they do not clutter production schedules."""
+    seeds = session.exec(
+        select(Booking).where(Booking.title.in_(list(SAMPLE_BOOKING_TITLES)))
+    ).all()
+    changed = False
+    for booking in seeds:
+        if booking.status != BookingStatus.CANCELLED:
+            booking.status = BookingStatus.CANCELLED
+            session.add(booking)
+            changed = True
+    if changed:
+        session.commit()
